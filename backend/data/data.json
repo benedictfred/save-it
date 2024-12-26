@@ -1,0 +1,22 @@
+{
+  "users": [
+    {
+      "id": 1735142799261,
+      "name": "Nebolisa Ugochukwu Benedict",
+      "email": "nebolisaugochukwu@gmail.com",
+      "phoneNumber": "7018231429",
+      "password": "$2b$10$nfv6hjdhgzNx9ztTAztgaOqD1KJ9nu15mQj0WnQppJxHgN72iN5BS",
+      "balance": 10000,
+      "transactions": []
+    },
+    {
+      "id": 1735224030498,
+      "name": "Nebolisa Nneka Agnes",
+      "email": "test@gmail.com",
+      "phoneNumber": "8037688520",
+      "password": "$2b$10$cYGcGI3kuHtYS02Imj2kouk1pwLk.cF0epumcxv6YFc1WAzFpHPpu",
+      "balance": 0,
+      "transactions": []
+    }
+  ]
+}
