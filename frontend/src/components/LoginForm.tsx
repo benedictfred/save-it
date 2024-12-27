@@ -47,7 +47,7 @@ export default function LoginForm() {
 
   return (
     <form
-      className="flex flex-col gap-y-4 lg:w-[50%] 2xl:w-[35%] max-md:w-[90%]"
+      className="flex flex-col gap-y-4 lg:w-[50%] 2xl:w-[35%] w-[90%] md:w-[70%]"
       onSubmit={handleSubmit(onSubmit)}
     >
       <div className="flex flex-col gap-y-2">
