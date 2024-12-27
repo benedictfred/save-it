@@ -44,7 +44,7 @@ app.post("/register", (req, res) => {
       (user) => user.email === email || user.phoneNumber === phoneNumber
     )
   ) {
-    return res.status(400).send({ message: "User already exists" });
+    return res.status(400).json({ message: "User already exists" });
   }
 
   const hashedPassword = bcrypt.hashSync(password, 10);
@@ -62,7 +62,7 @@ app.post("/register", (req, res) => {
   data.users.push(newUser);
   writeData(data);
 
-  res.status(201).send({ message: "User registered successfully" });
+  res.status(201).json({ message: "User registered successfully" });
 });
 
 //LOGIN
@@ -72,14 +72,14 @@ app.post("/login", (req, res) => {
 
   const user = data.users.find((user) => user.phoneNumber === phoneNumber);
   if (!user) {
-    return res.status(404).send({ message: "User not found" });
+    return res.status(404).json({ message: "User not found" });
   }
 
   if (!bcrypt.compareSync(password, user.password)) {
-    return res.status(401).send({ message: "Invalid number or password" });
+    return res.status(401).json({ message: "Invalid number or password" });
   }
 
-  res.status(200).send({
+  res.status(200).json({
     message: "Login successful",
     user: { id: user.id, email: user.email },
   });
@@ -92,10 +92,10 @@ app.get("/users/:id", (req, res) => {
 
   const user = data.users.find((user) => user.id == id);
   if (!user) {
-    return res.status(404).send({ message: "User not found" });
+    return res.status(404).json({ message: "User not found" });
   }
 
-  res.status(200).send(user);
+  res.status(200).json(user);
 });
 
 app.post("/pin", (req, res) => {
@@ -104,7 +104,7 @@ app.post("/pin", (req, res) => {
   const user = data.users.find((user) => user.phoneNumber === phoneNumber);
 
   if (!user) {
-    return res.status(404).send({ message: "User not found" });
+    return res.status(404).json({ message: "User not found" });
   }
 
   if (!user.pin) {
@@ -117,7 +117,7 @@ app.post("/pin", (req, res) => {
   const isValidPin = bcrypt.compareSync(pin, user.pin);
 
   if (!isValidPin) {
-    return res.status(401).send({ message: "Invalid Pin" });
+    return res.status(401).json({ message: "Invalid Pin" });
   }
 
   res.status(200).json({ message: "Pin is valid" });
@@ -131,13 +131,13 @@ app.post("/transfer", (req, res) => {
   if (senderNumber === recipientNumber) {
     return res
       .status(400)
-      .send({ message: "Cannot transfer to the same account" });
+      .json({ message: "Cannot transfer to the same account" });
   }
 
   const parsedAmount = parseFloat(amount);
 
   if (isNaN(parsedAmount) || amount <= 0) {
-    return res.status(400).send({ message: "Invalid amount" });
+    return res.status(400).json({ message: "Invalid amount" });
   }
 
   const data = readData();
@@ -148,11 +148,11 @@ app.post("/transfer", (req, res) => {
   );
 
   if (!sender || !receiver) {
-    return res.status(404).send({ message: "User not found" });
+    return res.status(404).json({ message: "User not found" });
   }
 
   if (sender.balance < amount) {
-    return res.status(400).send({ message: "Insufficient balance" });
+    return res.status(400).json({ message: "Insufficient balance" });
   }
 
   sender.balance -= parsedAmount;
@@ -183,10 +183,10 @@ app.post("/transfer", (req, res) => {
 
   try {
     writeData(data);
-    res.status(200).send({ message: "Transfer successful" });
+    res.status(200).json({ message: "Transfer successful" });
   } catch (err) {
     console.error("Error saving data:", err);
-    res.status(500).send({ message: "Error processing transaction" });
+    res.status(500).json({ message: "Error processing transaction" });
   }
 });
 

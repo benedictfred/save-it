@@ -1,4 +1,10 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import { SignUpFormData } from "../components/SignUpForm";
 import { CustomError, User } from "../utils/types";
 import { LoginFormData } from "../components/LoginForm";
@@ -19,28 +25,37 @@ const AccountContext = createContext<AccountContextType | undefined>(undefined);
 
 function AccountProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  // const API_URL = "http://localhost:8000";
+  const API_URL = import.meta.env.VITE_BASE_URL;
 
-  function getUser() {
+  const getUser = useCallback(() => {
     const localUser = JSON.parse(localStorage.getItem("user") as string);
     const id = localUser?.id;
     if (!id) return;
 
-    fetch(`http://localhost:8000/users/${id}`)
+    fetch(`${API_URL}/users/${id}`)
       .then((response) => response.json())
       .then((data) => setUser(data))
       .catch((err) => {
         console.error("Failed to fetch user data:", err);
       });
-  }
+  }, [API_URL]);
+
   useEffect(() => {
     getUser();
-  }, []);
+
+    const interval = setInterval(() => {
+      getUser();
+    }, 10000);
+
+    return () => clearInterval(interval);
+  }, [getUser]);
 
   async function login(
     data: LoginFormData
   ): Promise<{ status: "success" | "error"; message: string; user?: User }> {
     try {
-      const response = await fetch("http://localhost:8000/login", {
+      const response = await fetch(`${API_URL}/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -70,7 +85,7 @@ function AccountProvider({ children }: { children: React.ReactNode }) {
     data: SignUpFormData
   ): Promise<{ status: "success" | "error"; message: string }> {
     try {
-      const response = await fetch("http://localhost:8000/register", {
+      const response = await fetch(`${API_URL}/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

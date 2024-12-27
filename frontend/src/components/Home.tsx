@@ -30,13 +30,13 @@ export default function Home() {
           <p>Recent Transactions</p>
           <p>See All</p>
         </div>
-        {user?.transactions.length === 0 ? (
+        {user?.transactions?.length === 0 ? (
           <p className="text-center text-2xl text-gray-400 italic p-5">
             No Transactions Yet
           </p>
         ) : (
           <div className="divide-y divide-gray-400 space-y-4">
-            {user?.transactions.map((transaction: Transaction) => (
+            {user?.transactions?.map((transaction: Transaction) => (
               <Transactions transaction={transaction} key={transaction.id} />
             ))}
           </div>

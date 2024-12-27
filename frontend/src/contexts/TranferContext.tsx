@@ -25,10 +25,11 @@ function TransferProvider({ children }: { children: React.ReactNode }) {
     {} as TransferFormData
   );
   const [recipientName, setRecipientName] = useState("");
+  const API_URL = import.meta.env.VITE_BASE_URL;
 
   async function getRecipientName(number: string): Promise<string | null> {
     try {
-      const response = await fetch(`http://localhost:8000/recipient/${number}`);
+      const response = await fetch(`${API_URL}/recipient/${number}`);
       if (!response.ok) {
         throw new Error("User not found");
       }
@@ -45,7 +46,7 @@ function TransferProvider({ children }: { children: React.ReactNode }) {
     data: TransferAmount
   ): Promise<{ status: "success" | "error"; message: string }> {
     try {
-      const response = await fetch("http://localhost:8000/transfer", {
+      const response = await fetch(`${API_URL}/transfer`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -70,7 +71,7 @@ function TransferProvider({ children }: { children: React.ReactNode }) {
     data: setPinData
   ): Promise<{ status: "success" | "error"; message: string }> {
     try {
-      const response = await fetch("http://localhost:8000/pin", {
+      const response = await fetch(`${API_URL}/pin`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
