@@ -12,6 +12,7 @@ type AccountContextType = {
     data: LoginFormData
   ) => Promise<{ status: "success" | "error"; message: string; user?: User }>;
   user: User | null;
+  getUser: () => void;
 };
 
 const AccountContext = createContext<AccountContextType | undefined>(undefined);
@@ -19,7 +20,7 @@ const AccountContext = createContext<AccountContextType | undefined>(undefined);
 function AccountProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
 
-  useEffect(() => {
+  function getUser() {
     const localUser = JSON.parse(localStorage.getItem("user") as string);
     const id = localUser?.id;
     if (!id) return;
@@ -30,6 +31,9 @@ function AccountProvider({ children }: { children: React.ReactNode }) {
       .catch((err) => {
         console.error("Failed to fetch user data:", err);
       });
+  }
+  useEffect(() => {
+    getUser();
   }, []);
 
   async function login(
@@ -94,6 +98,7 @@ function AccountProvider({ children }: { children: React.ReactNode }) {
         login,
         setUser,
         user,
+        getUser,
       }}
     >
       {children}

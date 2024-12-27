@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState } from "react";
 import { TransferFormData } from "../components/TransferForm";
-import { CustomError, TransferAmount } from "../utils/types";
+import { CustomError, setPinData, TransferAmount } from "../utils/types";
 
 type TransferContextType = {
   transferData: TransferFormData;
@@ -10,6 +10,9 @@ type TransferContextType = {
   getRecipientName: (number: string) => Promise<string | null>;
   transferAmount: (
     data: TransferAmount
+  ) => Promise<{ status: "success" | "error"; message: string }>;
+  setPin: (
+    data: setPinData
   ) => Promise<{ status: "success" | "error"; message: string }>;
 };
 
@@ -63,6 +66,31 @@ function TransferProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
+  async function setPin(
+    data: setPinData
+  ): Promise<{ status: "success" | "error"; message: string }> {
+    try {
+      const response = await fetch("http://localhost:8000/pin", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message);
+      }
+
+      const responseData = await response.json();
+      return { status: "success", message: responseData.message };
+    } catch (error) {
+      const customError = error as CustomError;
+      return { status: "error", message: customError.message };
+    }
+  }
+
   return (
     <TransferContext.Provider
       value={{
@@ -72,6 +100,7 @@ function TransferProvider({ children }: { children: React.ReactNode }) {
         getRecipientName,
         setRecipientName,
         transferAmount,
+        setPin,
       }}
     >
       {children}

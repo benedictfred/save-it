@@ -38,7 +38,10 @@ export default function App() {
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>
-            <ToastContainer aria-label="toast-message" />
+            <ToastContainer
+              aria-label="toast-message"
+              className="max-md:w-[70%]"
+            />
           </BrowserRouter>
         </TransferProvider>
       </AccountProvider>

@@ -3,6 +3,7 @@ export type User = {
   name: string;
   email: string;
   phoneNumber: string;
+  pin: string;
   password: string;
   balance: number;
   transactions: Transaction[] | [];
@@ -11,10 +12,13 @@ export type User = {
 export type Transaction = {
   id: number;
   amount: number;
-  type: "deposit" | "transfer";
+  type: "credit" | "debit";
   date: string;
-  sender: string;
-  receiver: string;
+  recipientNumber: string;
+  recipientName: string;
+  senderNumber: string;
+  senderName: string;
+  transaction?: Transaction;
 };
 
 export type LoginUserData = {
@@ -31,5 +35,10 @@ export type TransferAmount = {
   amount: number;
   recipientName: string;
   recipientNumber: string;
-  senderNumber: string;
+  senderNumber?: string;
+};
+
+export type setPinData = {
+  phoneNumber: string | undefined;
+  pin: string | undefined;
 };

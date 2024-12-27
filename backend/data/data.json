@@ -5,18 +5,58 @@
       "name": "Nebolisa Ugochukwu Benedict",
       "email": "nebolisaugochukwu@gmail.com",
       "phoneNumber": "7018231429",
+      "pin": "$2b$10$1EZsycVQCNro2gPWBaQuIu9jfT5j6ajEMIQfnODqjy/A6PFqygl3m",
       "password": "$2b$10$nfv6hjdhgzNx9ztTAztgaOqD1KJ9nu15mQj0WnQppJxHgN72iN5BS",
-      "balance": 10000,
-      "transactions": []
+      "balance": 5500,
+      "transactions": [
+        {
+          "id": 1735253465398,
+          "recipientNumber": "8037688520",
+          "recipientName": "Nebolisa Nneka Agnes",
+          "senderName": "Nebolisa Ugochukwu Benedict",
+          "amount": 3000,
+          "date": "2024-12-26T22:51:05.398Z",
+          "type": "debit"
+        },
+        {
+          "id": 1735264643793,
+          "recipientNumber": "8037688520",
+          "recipientName": "Nebolisa Nneka Agnes",
+          "senderName": "Nebolisa Ugochukwu Benedict",
+          "amount": 1000,
+          "date": "2024-12-27T01:57:23.793Z",
+          "type": "debit"
+        }
+      ]
     },
     {
       "id": 1735224030498,
       "name": "Nebolisa Nneka Agnes",
       "email": "test@gmail.com",
       "phoneNumber": "8037688520",
+      "pin": "",
       "password": "$2b$10$cYGcGI3kuHtYS02Imj2kouk1pwLk.cF0epumcxv6YFc1WAzFpHPpu",
-      "balance": 0,
-      "transactions": []
+      "balance": 4500,
+      "transactions": [
+        {
+          "id": 1735253465398,
+          "recipientNumber": "8037688520",
+          "recipientName": "Nebolisa Nneka Agnes",
+          "senderName": "Nebolisa Ugochukwu Benedict",
+          "amount": 3000,
+          "date": "2024-12-26T22:51:05.398Z",
+          "type": "credit"
+        },
+        {
+          "id": 1735264643794,
+          "recipientNumber": "8037688520",
+          "recipientName": "Nebolisa Nneka Agnes",
+          "senderName": "Nebolisa Ugochukwu Benedict",
+          "amount": 1000,
+          "date": "2024-12-27T01:57:23.794Z",
+          "type": "credit"
+        }
+      ]
     }
   ]
 }

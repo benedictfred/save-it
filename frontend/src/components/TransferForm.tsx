@@ -10,6 +10,7 @@ export type TransferFormData = {
   recipientNumber: string;
   recipientName: string;
   senderNumber?: string;
+  senderName?: string;
 };
 
 export default function TransferForm() {
@@ -45,7 +46,11 @@ export default function TransferForm() {
   }, [setValue, recipientName]);
 
   function onSubmit(data: TransferFormData) {
-    const newData = { ...data, senderNumber: user?.phoneNumber };
+    const newData = {
+      ...data,
+      senderNumber: user?.phoneNumber,
+      senderName: user?.name,
+    };
     setTransferData(newData);
     console.log(newData);
     setRecipientName("");

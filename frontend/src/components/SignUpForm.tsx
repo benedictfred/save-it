@@ -34,7 +34,7 @@ export default function SignUpForm() {
   };
   return (
     <form
-      className="flex flex-col gap-y-4 lg:w-[50%] 2xl:w-[35%]"
+      className="flex flex-col gap-y-4 lg:w-[50%] 2xl:w-[35%] max-md:w-[90%]"
       onSubmit={handleSubmit(onSubmit)}
     >
       <div className="flex flex-col gap-y-2">

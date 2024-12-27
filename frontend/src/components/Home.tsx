@@ -1,5 +1,6 @@
 import { useAccount } from "../contexts/AccountContext";
 import { formatCurrency, truncateName } from "../utils/helpers";
+import { Transaction } from "../utils/types";
 import Transactions from "./Transactions";
 
 export default function Home() {
@@ -25,14 +26,21 @@ export default function Home() {
         </div>
       </div>
       <div>
-        <div className="flex justify-between mb-3 mt-3">
+        <div className="flex justify-between mb-3 mt-5">
           <p>Recent Transactions</p>
           <p>See All</p>
         </div>
-        <div className="divide-y divide-gray-400 space-y-4">
-          <Transactions />
-          <Transactions />
-        </div>
+        {user?.transactions.length === 0 ? (
+          <p className="text-center text-2xl text-gray-400 italic p-5">
+            No Transactions Yet
+          </p>
+        ) : (
+          <div className="divide-y divide-gray-400 space-y-4">
+            {user?.transactions.map((transaction: Transaction) => (
+              <Transactions transaction={transaction} key={transaction.id} />
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );

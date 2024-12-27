@@ -3,12 +3,15 @@ import { formatCurrency } from "../utils/helpers";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { useTransfer } from "../contexts/TranferContext";
+import { useAccount } from "../contexts/AccountContext";
 
 export default function Details() {
+  const { getUser, user } = useAccount();
   const { transferData, transferAmount } = useTransfer();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [pin, setPin] = useState("");
+  const [userPin, setUserPin] = useState("");
   const navigate = useNavigate();
+  const { setPin } = useTransfer();
 
   useEffect(() => {
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
@@ -24,18 +27,22 @@ export default function Details() {
   }, []);
 
   const handleConfirmTransaction = async () => {
-    if (pin === "1234") {
+    const { status: pinStatus } = await setPin({
+      pin: userPin,
+      phoneNumber: user?.phoneNumber,
+    });
+    if (pinStatus === "success") {
       const { message, status } = await transferAmount(transferData);
       if (status === "success") {
         toast.success(message);
+        getUser();
         return navigate("/transfer");
       }
 
       if (status === "error") {
         toast.error(message);
       }
-      setPin("");
-      toast.success("Transaction successful");
+      setUserPin("");
       setIsModalOpen(false);
     } else {
       toast.error("Invalid PIN");
@@ -91,8 +98,9 @@ export default function Details() {
               type="password"
               className="w-full border rounded-md py-2 px-2 mt-3 text-black outline-none"
               placeholder="Enter your pin"
-              value={pin}
-              onChange={(e) => setPin(e.target.value)}
+              maxLength={4}
+              value={userPin}
+              onChange={(e) => setUserPin(e.target.value)}
             />
             <button
               className="bg-primary text-black py-2 px-4 rounded-md w-full mt-3"

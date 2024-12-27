@@ -54,6 +54,7 @@ app.post("/register", (req, res) => {
     name,
     email,
     phoneNumber,
+    pin: "",
     password: hashedPassword,
     balance: 0,
     transactions: [],
@@ -97,9 +98,35 @@ app.get("/users/:id", (req, res) => {
   res.status(200).send(user);
 });
 
+app.post("/pin", (req, res) => {
+  const { phoneNumber, pin } = req.body;
+  const data = readData();
+  const user = data.users.find((user) => user.phoneNumber === phoneNumber);
+
+  if (!user) {
+    return res.status(404).send({ message: "User not found" });
+  }
+
+  if (!user.pin) {
+    const hashedPin = bcrypt.hashSync(pin, 10);
+    user.pin = hashedPin;
+    writeData(data);
+    return res.status(200).json({ message: "Pin set successfully" });
+  }
+
+  const isValidPin = bcrypt.compareSync(pin, user.pin);
+
+  if (!isValidPin) {
+    return res.status(401).send({ message: "Invalid Pin" });
+  }
+
+  res.status(200).json({ message: "Pin is valid" });
+});
+
 //Transfer Money
 app.post("/transfer", (req, res) => {
-  const { senderNumber, recipientNumber, amount, recipientName } = req.body;
+  const { senderNumber, recipientNumber, amount, recipientName, senderName } =
+    req.body;
 
   if (senderNumber === recipientNumber) {
     return res
@@ -135,6 +162,7 @@ app.post("/transfer", (req, res) => {
     id: Date.now(),
     recipientNumber,
     recipientName,
+    senderName,
     amount: parsedAmount,
     date: new Date().toISOString(),
     type: "debit",
@@ -144,6 +172,7 @@ app.post("/transfer", (req, res) => {
     id: Date.now(),
     recipientNumber,
     recipientName,
+    senderName,
     amount: parsedAmount,
     date: new Date().toISOString(),
     type: "credit",
