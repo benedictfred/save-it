@@ -14,6 +14,7 @@ export default function LoginForm() {
     formState: { errors, isSubmitting },
   } = useForm<LoginFormData>();
   const navigate = useNavigate();
+  const API_URL = import.meta.env.VITE_BASE_URL;
 
   const { login, setUser } = useAccount();
 
@@ -29,7 +30,7 @@ export default function LoginForm() {
       localStorage.setItem("expiry", expiryTime.toString());
 
       // Fetch the full user data immediately after login
-      const fetchedUser = await fetch(`http://localhost:8000/users/${user.id}`)
+      const fetchedUser = await fetch(`${API_URL}/users/${user.id}`)
         .then((response) => response.json())
         .catch((err) => {
           toast.error("Failed to fetch user data");
