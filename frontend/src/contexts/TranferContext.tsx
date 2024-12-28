@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState } from "react";
 import { TransferFormData } from "../components/TransferForm";
 import { CustomError, setPinData, TransferAmount } from "../utils/types";
+import { useAccount } from "./AccountContext";
 
 type TransferContextType = {
   transferData: TransferFormData;
@@ -25,10 +26,12 @@ function TransferProvider({ children }: { children: React.ReactNode }) {
     {} as TransferFormData
   );
   const [recipientName, setRecipientName] = useState("");
+  const { setIsLoading } = useAccount();
   const API_URL = import.meta.env.VITE_BASE_URL;
 
   async function getRecipientName(number: string): Promise<string | null> {
     try {
+      setIsLoading(true);
       const response = await fetch(`${API_URL}/recipient/${number}`);
       if (!response.ok) {
         throw new Error("User not found");
@@ -39,6 +42,8 @@ function TransferProvider({ children }: { children: React.ReactNode }) {
     } catch (error) {
       const customError = error as CustomError;
       return customError.message;
+    } finally {
+      setIsLoading(false);
     }
   }
 
@@ -46,6 +51,7 @@ function TransferProvider({ children }: { children: React.ReactNode }) {
     data: TransferAmount
   ): Promise<{ status: "success" | "error"; message: string }> {
     try {
+      setIsLoading(true);
       const response = await fetch(`${API_URL}/transfer`, {
         method: "POST",
         headers: {
@@ -64,6 +70,8 @@ function TransferProvider({ children }: { children: React.ReactNode }) {
     } catch (error) {
       const customError = error as CustomError;
       return { status: "error", message: customError.message };
+    } finally {
+      setIsLoading(false);
     }
   }
 
@@ -71,6 +79,7 @@ function TransferProvider({ children }: { children: React.ReactNode }) {
     data: setPinData
   ): Promise<{ status: "success" | "error"; message: string }> {
     try {
+      setIsLoading(true);
       const response = await fetch(`${API_URL}/pin`, {
         method: "POST",
         headers: {
@@ -89,6 +98,8 @@ function TransferProvider({ children }: { children: React.ReactNode }) {
     } catch (error) {
       const customError = error as CustomError;
       return { status: "error", message: customError.message };
+    } finally {
+      setIsLoading(false);
     }
   }
 

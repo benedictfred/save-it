@@ -19,12 +19,16 @@ type AccountContextType = {
   ) => Promise<{ status: "success" | "error"; message: string; user?: User }>;
   user: User | null;
   getUser: () => void;
+  isLoading: boolean;
+  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 const AccountContext = createContext<AccountContextType | undefined>(undefined);
 
 function AccountProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
   // const API_URL = "http://localhost:8000";
   const API_URL = import.meta.env.VITE_BASE_URL;
 
@@ -55,6 +59,7 @@ function AccountProvider({ children }: { children: React.ReactNode }) {
     data: LoginFormData
   ): Promise<{ status: "success" | "error"; message: string; user?: User }> {
     try {
+      setIsLoading(true);
       const response = await fetch(`${API_URL}/login`, {
         method: "POST",
         headers: {
@@ -78,6 +83,8 @@ function AccountProvider({ children }: { children: React.ReactNode }) {
     } catch (error) {
       const customError = error as CustomError;
       return { status: "error", message: customError.message };
+    } finally {
+      setIsLoading(false);
     }
   }
 
@@ -85,6 +92,7 @@ function AccountProvider({ children }: { children: React.ReactNode }) {
     data: SignUpFormData
   ): Promise<{ status: "success" | "error"; message: string }> {
     try {
+      setIsLoading(true);
       const response = await fetch(`${API_URL}/register`, {
         method: "POST",
         headers: {
@@ -103,6 +111,8 @@ function AccountProvider({ children }: { children: React.ReactNode }) {
     } catch (error) {
       const customError = error as CustomError;
       return { status: "error", message: customError.message };
+    } finally {
+      setIsLoading(false);
     }
   }
 
@@ -114,6 +124,8 @@ function AccountProvider({ children }: { children: React.ReactNode }) {
         setUser,
         user,
         getUser,
+        isLoading,
+        setIsLoading,
       }}
     >
       {children}

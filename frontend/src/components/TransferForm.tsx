@@ -60,7 +60,7 @@ export default function TransferForm() {
     <>
       <p className="text-xl">Send to Save It User</p>
       <form
-        className="w-1/2 space-y-5 2xl:w-2/6"
+        className="w-[80%] md:w-1/2 space-y-5 2xl:w-2/6"
         onSubmit={handleSubmit(onSubmit)}
       >
         <div className="space-y-2">

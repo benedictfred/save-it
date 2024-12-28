@@ -1,3 +1,4 @@
+import { Navigate } from "react-router-dom";
 import { useAccount } from "../contexts/AccountContext";
 import { formatCurrency, truncateName } from "../utils/helpers";
 import { Transaction } from "../utils/types";
@@ -5,6 +6,7 @@ import Transactions from "./Transactions";
 
 export default function Home() {
   const { user } = useAccount();
+  if (!user) return <Navigate to="/sign-in" />;
   return (
     <section className="w-full p-5 overflow-y-auto">
       <p>Home</p>

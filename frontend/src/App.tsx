@@ -7,44 +7,36 @@ import Home from "./components/Home";
 import Transfer from "./components/Transfer";
 import Details from "./components/Details";
 import TransferForm from "./components/TransferForm";
-import { AccountProvider } from "./contexts/AccountContext";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
-import { TransferProvider } from "./contexts/TranferContext";
-import { AuthProvider } from "./contexts/AuthContext";
+import { useAccount } from "./contexts/AccountContext";
+import Loader from "./components/Loader";
 
 export default function App() {
+  const { isLoading } = useAccount();
   return (
-    <AuthProvider>
-      <AccountProvider>
-        <TransferProvider>
-          <BrowserRouter>
-            <Routes>
-              <Route index element={<Navigate to="/sign-in" />} />
-              <Route path="/sign-in" element={<SignIn />} />
-              <Route path="/sign-up" element={<SignUp />} />
-              <Route
-                element={
-                  <ProtectedRoute>
-                    <AppLayout />
-                  </ProtectedRoute>
-                }
-              >
-                <Route path="/home" element={<Home />} />
-                <Route path="/transfer" element={<Transfer />}>
-                  <Route index element={<TransferForm />} />
-                  <Route path="confirm-details" element={<Details />} />
-                </Route>
-              </Route>
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-            <ToastContainer
-              aria-label="toast-message"
-              className="max-md:w-[70%]"
-            />
-          </BrowserRouter>
-        </TransferProvider>
-      </AccountProvider>
-    </AuthProvider>
+    <BrowserRouter>
+      <Routes>
+        <Route index element={<Navigate to="/sign-in" />} />
+        <Route path="/sign-in" element={<SignIn />} />
+        <Route path="/sign-up" element={<SignUp />} />
+        <Route
+          element={
+            <ProtectedRoute>
+              <AppLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route path="/home" element={<Home />} />
+          <Route path="/transfer" element={<Transfer />}>
+            <Route index element={<TransferForm />} />
+            <Route path="confirm-details" element={<Details />} />
+          </Route>
+        </Route>
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+      {isLoading && <Loader />}
+      <ToastContainer aria-label="toast-message" className="max-md:w-[70%]" />
+    </BrowserRouter>
   );
 }
