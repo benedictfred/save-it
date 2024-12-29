@@ -75,6 +75,7 @@ export default function SignUpForm() {
             type="tel"
             id="number"
             maxLength={10}
+            minLength={10}
             className="py-3 pl-20 border rounded-md w-full outline-none text-black"
             placeholder="Enter your phone number"
             {...register("phoneNumber", {

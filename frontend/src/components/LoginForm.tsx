@@ -33,8 +33,7 @@ export default function LoginForm() {
       const fetchedUser = await fetch(`${API_URL}/users/${user.id}`)
         .then((response) => response.json())
         .catch((err) => {
-          toast.error("Failed to fetch user data");
-          console.error(err);
+          toast.error(err.message);
         });
 
       if (fetchedUser) {
