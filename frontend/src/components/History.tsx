@@ -5,9 +5,9 @@ import Transactions from "./Transactions";
 export default function History() {
   const { user } = useAccount();
   return (
-    <div>
+    <div className=" overflow-y-auto max-md:no-scrollbar pb-5">
       <h1 className="mt-8 ml-4">Transaction History</h1>
-      <div className="divide-y divide-gray-400 space-y-4 px-10 mt-5">
+      <div className="divide-y divide-gray-400 space-y-4 px-8 mt-5 max-sm:px-5 ">
         {user?.transactions?.map((transaction: Transaction) => (
           <Transactions transaction={transaction} key={transaction.id} />
         ))}
