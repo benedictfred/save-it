@@ -21,5 +21,11 @@ export function formatTime(date: string) {
 }
 
 export function truncateName(name: string) {
-  return name?.split(" ")?.[1];
+  const splitedName = name?.trim()?.split(" ");
+
+  if (splitedName?.length > 1) {
+    return splitedName?.[1];
+  }
+
+  return name;
 }

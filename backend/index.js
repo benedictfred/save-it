@@ -19,7 +19,7 @@ app.use(bodyParser.json());
 
 connectDB();
 
-const PORT = 8000;
+// const PORT = 8000;
 
 //GET USERS
 // app.get("/users", (req, res) => {
@@ -207,6 +207,6 @@ app.post("/transfer", async (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
-});
+// app.listen(PORT, () => {
+//   console.log(`Server is running on http://localhost:${PORT}`);
+// });

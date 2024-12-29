@@ -29,15 +29,12 @@ export default function Sidebar() {
           <span>Home</span>
         </NavLink>
 
-        <NavLink
-          to="/deposit"
-          className="flex items-center space-x-2 max-md:flex-col"
-        >
+        <li className="flex items-center text-gray-500 space-x-2 max-md:flex-col">
           <span>
             <MdCallReceived size={25} />
           </span>
           <span>Deposit</span>
-        </NavLink>
+        </li>
 
         <NavLink
           to="/transfer"

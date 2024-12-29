@@ -52,7 +52,6 @@ export default function TransferForm() {
       senderName: user?.name,
     };
     setTransferData(newData);
-    console.log(newData);
     setRecipientName("");
     navigate("/transfer/confirm-details");
   }

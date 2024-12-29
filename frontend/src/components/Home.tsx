@@ -1,12 +1,15 @@
-import { Navigate } from "react-router-dom";
 import { useAccount } from "../contexts/AccountContext";
 import { formatCurrency, truncateName } from "../utils/helpers";
 import { Transaction } from "../utils/types";
 import Transactions from "./Transactions";
+import Loader from "./Loader";
+import { Link } from "react-router-dom";
 
 export default function Home() {
   const { user } = useAccount();
-  if (!user) return <Navigate to="/sign-in" />;
+  const slicedTransaction = user?.transactions.slice(0, 10);
+
+  if (user === null) return <Loader />;
   return (
     <section className="w-full p-5 overflow-y-auto">
       <p>Home</p>
@@ -30,7 +33,7 @@ export default function Home() {
       <div>
         <div className="flex justify-between mb-3 mt-5">
           <p>Recent Transactions</p>
-          <p>See All</p>
+          <Link to="/history">See All</Link>
         </div>
         {user?.transactions?.length === 0 ? (
           <p className="text-center text-2xl text-gray-400 italic p-5">
@@ -38,7 +41,7 @@ export default function Home() {
           </p>
         ) : (
           <div className="divide-y divide-gray-400 space-y-4">
-            {user?.transactions?.map((transaction: Transaction) => (
+            {slicedTransaction?.map((transaction: Transaction) => (
               <Transactions transaction={transaction} key={transaction.id} />
             ))}
           </div>

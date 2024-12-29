@@ -7,7 +7,7 @@ export default function Header() {
   return (
     <header className="flex justify-between items-center px-3 py-5 shadow-lg border-b border-gray-700">
       <div>
-        <h1>Save It</h1>
+        <h1 className="text-xl font-bold text-primary">Save It</h1>
       </div>
       <div className="flex items-center space-x-4">
         <div className="flex items-center space-x-3">

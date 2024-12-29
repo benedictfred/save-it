@@ -74,7 +74,6 @@ function AccountProvider({ children }: { children: React.ReactNode }) {
       }
 
       const responseData = await response.json();
-      console.log(responseData);
       return {
         status: "success",
         message: responseData.message,

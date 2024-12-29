@@ -11,6 +11,7 @@ import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { useAccount } from "./contexts/AccountContext";
 import Loader from "./components/Loader";
+import History from "./components/History";
 
 export default function App() {
   const { isLoading } = useAccount();
@@ -28,6 +29,7 @@ export default function App() {
           }
         >
           <Route path="/home" element={<Home />} />
+          <Route path="history" element={<History />} />
           <Route path="/transfer" element={<Transfer />}>
             <Route index element={<TransferForm />} />
             <Route path="confirm-details" element={<Details />} />
