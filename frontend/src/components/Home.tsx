@@ -36,9 +36,9 @@ export default function Home() {
             <span className="text-sm">Available Balance</span>
             <span>
               {hideBalance ? (
-                <FaRegEye onClick={() => setHideBalance(false)} />
+                <FaRegEyeSlash onClick={() => setHideBalance(false)} />
               ) : (
-                <FaRegEyeSlash onClick={() => setHideBalance(true)} />
+                <FaRegEye onClick={() => setHideBalance(true)} />
               )}
             </span>
           </p>
