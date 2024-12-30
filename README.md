@@ -27,4 +27,4 @@ Save-It is a simple banking web application designed with minimal features to de
 - bcrypt
 - CORS
 
-If you need tokens to test the app's functionalities, feel free to send me an email at: nebolisaugochukwu@gmail.com.
+If you need tokens to test the app's functionalities, feel free to send me an email at: nebolisaugochukwu@gmail.com
