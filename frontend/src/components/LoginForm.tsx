@@ -2,12 +2,15 @@ import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 import { useAccount } from "../contexts/AccountContext";
+import { FaRegEye, FaRegEyeSlash } from "../utils/icons";
+import { useState } from "react";
 
 export type LoginFormData = {
   phoneNumber: string;
   password: string;
 };
 export default function LoginForm() {
+  const [showPassword, setShowPassword] = useState(false);
   const {
     register,
     handleSubmit,
@@ -76,13 +79,25 @@ export default function LoginForm() {
         <label htmlFor="password" className="text-left ">
           Password
         </label>
-        <input
-          type="password"
-          id="password"
-          className="p-3 w-full border rounded-md outline-none text-black"
-          placeholder="Enter your password"
-          {...register("password", { required: "Password is required" })}
-        />
+        <div className="relative">
+          <input
+            type={showPassword ? "text" : "password"}
+            id="password"
+            className="p-3 w-full border rounded-md outline-none text-black"
+            placeholder="Enter your password"
+            {...register("password", { required: "Password is required" })}
+          />
+          <span
+            className="absolute text-black right-3 top-3 cursor-pointer"
+            onClick={() => setShowPassword(!showPassword)}
+          >
+            {showPassword ? (
+              <FaRegEye size={25} />
+            ) : (
+              <FaRegEyeSlash size={25} />
+            )}
+          </span>
+        </div>
         {errors.password && (
           <p className="text-red-500">{errors.password.message}</p>
         )}
