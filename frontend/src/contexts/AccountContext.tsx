@@ -8,6 +8,7 @@ import {
 import { SignUpFormData } from "../components/SignUpForm";
 import { CustomError, User } from "../utils/types";
 import { LoginFormData } from "../components/LoginForm";
+import { useLocation, useNavigate } from "react-router-dom";
 
 type AccountContextType = {
   setUser: (user: User) => void;
@@ -28,6 +29,8 @@ const AccountContext = createContext<AccountContextType | undefined>(undefined);
 function AccountProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
 
   // const API_URL = "http://localhost:8000";
   const API_URL = import.meta.env.VITE_BASE_URL;
@@ -35,7 +38,15 @@ function AccountProvider({ children }: { children: React.ReactNode }) {
   const getUser = useCallback(() => {
     const localUser = JSON.parse(localStorage.getItem("user") as string);
     const id = localUser?.id;
-    if (!id) return;
+
+    const authPages = ["/sign-in", "/sign-up"];
+
+    if (!id) {
+      if (!authPages.includes(pathname)) {
+        navigate("/sign-in");
+      }
+      return;
+    }
 
     fetch(`${API_URL}/users/${id}`)
       .then((response) => response.json())
@@ -43,7 +54,7 @@ function AccountProvider({ children }: { children: React.ReactNode }) {
       .catch((err) => {
         console.error("Failed to fetch user data:", err);
       });
-  }, [API_URL]);
+  }, [API_URL, navigate, pathname]);
 
   useEffect(() => {
     getUser();

@@ -1,4 +1,4 @@
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import SignIn from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
@@ -16,7 +16,7 @@ import History from "./components/History";
 export default function App() {
   const { isLoading } = useAccount();
   return (
-    <BrowserRouter>
+    <>
       <Routes>
         <Route index element={<Navigate to="/sign-in" />} />
         <Route path="/sign-in" element={<SignIn />} />
@@ -39,6 +39,6 @@ export default function App() {
       </Routes>
       {isLoading && <Loader />}
       <ToastContainer aria-label="toast-message" className="max-md:w-[70%]" />
-    </BrowserRouter>
+    </>
   );
 }

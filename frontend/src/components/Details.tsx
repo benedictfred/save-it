@@ -16,7 +16,7 @@ export default function Details() {
   useEffect(() => {
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
       event.preventDefault();
-      event.returnValue = "";
+      event.returnValue = true;
     };
 
     window.addEventListener("beforeunload", handleBeforeUnload);
