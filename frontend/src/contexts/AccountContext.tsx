@@ -48,7 +48,7 @@ function AccountProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    fetch(`${API_URL}/users/${id}`)
+    fetch(`${API_URL}/user/${id}`)
       .then((response) => response.json())
       .then((data) => setUser(data))
       .catch((err) => {
@@ -71,7 +71,7 @@ function AccountProvider({ children }: { children: React.ReactNode }) {
   ): Promise<{ status: "success" | "error"; message: string; user?: User }> {
     try {
       setIsLoading(true);
-      const response = await fetch(`${API_URL}/login`, {
+      const response = await fetch(`${API_URL}/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -103,7 +103,7 @@ function AccountProvider({ children }: { children: React.ReactNode }) {
   ): Promise<{ status: "success" | "error"; message: string }> {
     try {
       setIsLoading(true);
-      const response = await fetch(`${API_URL}/register`, {
+      const response = await fetch(`${API_URL}/auth/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
