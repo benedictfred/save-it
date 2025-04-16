@@ -33,7 +33,7 @@ export default function LoginForm() {
       localStorage.setItem("expiry", expiryTime.toString());
 
       // Fetch the full user data immediately after login
-      const fetchedUser = await fetch(`${API_URL}/users/${user.id}`)
+      const fetchedUser = await fetch(`${API_URL}/user/${user.id}`)
         .then((response) => response.json())
         .catch((err) => {
           toast.error(err.message);

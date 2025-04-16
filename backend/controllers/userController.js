@@ -1,4 +1,5 @@
 const User = require("../models/User");
+const bcrypt = require("bcrypt");
 
 exports.getRecipientPhoneNumber = async (req, res) => {
   const { phoneNumber } = req.params;

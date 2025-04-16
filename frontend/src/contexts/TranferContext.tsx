@@ -32,7 +32,7 @@ function TransferProvider({ children }: { children: React.ReactNode }) {
   async function getRecipientName(number: string): Promise<string | null> {
     try {
       setIsLoading(true);
-      const response = await fetch(`${API_URL}/recipient/${number}`);
+      const response = await fetch(`${API_URL}/user/recipient/${number}`);
       if (!response.ok) {
         throw new Error("User not found");
       }
@@ -52,7 +52,7 @@ function TransferProvider({ children }: { children: React.ReactNode }) {
   ): Promise<{ status: "success" | "error"; message: string }> {
     try {
       setIsLoading(true);
-      const response = await fetch(`${API_URL}/transfer`, {
+      const response = await fetch(`${API_URL}/user/transfer`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -80,7 +80,7 @@ function TransferProvider({ children }: { children: React.ReactNode }) {
   ): Promise<{ status: "success" | "error"; message: string }> {
     try {
       setIsLoading(true);
-      const response = await fetch(`${API_URL}/pin`, {
+      const response = await fetch(`${API_URL}/user/pin`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
