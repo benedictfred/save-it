@@ -19,6 +19,7 @@ model User {
   phoneNumber   String        @unique
   email         String        @unique
   password      String
+  passwordChangedAt DateTime?
   pin           String?       @default("")
   balance       Float         @default(2000)
   transactions  Transaction[] // 1-to-many relationship

@@ -1,10 +1,10 @@
 import express, { NextFunction, Request, Response } from "express";
 import dotenv from "dotenv";
 import morgan from "morgan";
-import userRouter from "@/routes/userRoutes";
+import userRouter from "@/routes/user.routes";
 import { prisma } from "./prisma";
 import AppError from "@/utils/appError";
-import globalErrorHandler from "@/controllers/errorController";
+import globalErrorHandler from "@/middlewares/error.middleware";
 
 dotenv.config();
 

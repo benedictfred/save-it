@@ -1,7 +1,7 @@
 import AppError from "@/utils/appError";
-import cloneError from "@/utils/cloneError";
 import { Prisma } from "@prisma/client";
 import { NextFunction, Request, Response } from "express";
+import { ZodError } from "zod";
 
 const handleKnownErrors = (err: any) => {
   const target = (err.meta?.target as string[])?.join(", ");
@@ -17,6 +17,12 @@ const handleValidationErrors = () => {
 const handleDbInitError = () => {
   const message = "Database initialization failed.";
   return new AppError(message, 500);
+};
+
+const handleZodErrors = (err: ZodError) => {
+  const issues = err.issues.map((e) => `${e.path.join(".")}: ${e.message}`);
+  const message = `Invalid input data. ${issues.join(" | ")}`;
+  return new AppError(message, 400);
 };
 
 const sendErrorDev = (err: any, res: Response) => {
@@ -56,15 +62,17 @@ const globalErrorHandler = (
   if (process.env.NODE_ENV === "development") {
     sendErrorDev(err, res);
   } else if (process.env.NODE_ENV === "production") {
-    let error = cloneError(err);
-    if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      if (error.code === "P2002") error = handleKnownErrors(error);
-    } else if (error instanceof Prisma.PrismaClientValidationError) {
-      error = handleValidationErrors();
-    } else if (error instanceof Prisma.PrismaClientInitializationError) {
-      error = handleDbInitError();
+    if (err instanceof Prisma.PrismaClientKnownRequestError) {
+      if (err.code === "P2002") err = handleKnownErrors(err);
+    } else if (err instanceof Prisma.PrismaClientValidationError) {
+      err = handleValidationErrors();
+    } else if (err instanceof Prisma.PrismaClientInitializationError) {
+      err = handleDbInitError();
+    } else if (err instanceof ZodError) {
+      err = handleZodErrors(err);
     }
-    sendErrorProd(error, res);
+
+    sendErrorProd(err, res);
   }
 };
 

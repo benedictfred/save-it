@@ -1,7 +1,15 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, User } from "@prisma/client";
 import bcrypt from "bcrypt";
 
-export const prisma = new PrismaClient().$extends({
+export const prisma = new PrismaClient({
+  omit: {
+    user: {
+      password: true,
+      passwordChangedAt: true,
+      pin: true,
+    },
+  },
+}).$extends({
   query: {
     user: {
       async create({ model, operation, args, query }) {
@@ -9,16 +17,6 @@ export const prisma = new PrismaClient().$extends({
         args.data = { ...args.data, password: hashedPassword };
 
         return query(args);
-      },
-    },
-  },
-  result: {
-    user: {
-      password: {
-        needs: {},
-        compute() {
-          return undefined;
-        },
       },
     },
   },
