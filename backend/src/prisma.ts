@@ -7,6 +7,11 @@ export const prisma = new PrismaClient({
       password: true,
       passwordChangedAt: true,
       pin: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+    transaction: {
+      userId: true,
     },
   },
 }).$extends({
@@ -14,7 +19,11 @@ export const prisma = new PrismaClient({
     user: {
       async create({ model, operation, args, query }) {
         const hashedPassword = await bcrypt.hash(args.data.password, 12);
-        args.data = { ...args.data, password: hashedPassword };
+        args.data = {
+          ...args.data,
+          password: hashedPassword,
+          phoneNumber: `0${args.data.phoneNumber}`,
+        };
 
         return query(args);
       },

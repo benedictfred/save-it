@@ -20,7 +20,7 @@ export const signUp = async (body: any) => {
     signupSchema.parse(body);
 
   const user = await prisma.user.create({
-    data: { name, phoneNumber, password, email },
+    data: { name, phoneNumber, password, email, accountNumber: phoneNumber },
   });
 
   const token = generateToken(user.id);

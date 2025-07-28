@@ -17,10 +17,11 @@ model User {
   id            String          @id @default(uuid())
   name          String
   phoneNumber   String        @unique
+  accountNumber String        @unique
   email         String        @unique
   password      String
   passwordChangedAt DateTime?
-  pin           String?       @default("")
+  pin           String?      
   balance       Float         @default(2000)
   transactions  Transaction[] // 1-to-many relationship
   createdAt     DateTime      @default(now())
@@ -32,9 +33,11 @@ model Transaction {
   amount          Float
   date            DateTime
   type            TransactionType
+  status          TransactionStatus
   recipientName   String?
-  recipientNumber String?
+  recipientAccNumber String?
   senderName      String?
+  senderAccNumber  String?
   userId          String
   user            User      @relation(fields: [userId], references: [id])
 }
@@ -44,4 +47,8 @@ enum TransactionType {
   debit
 }
 
-
+enum TransactionStatus {
+  success
+  pending
+  failed
+}

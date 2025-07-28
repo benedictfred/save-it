@@ -1,12 +1,19 @@
 import { login, protect, signUp } from "@/controllers/auth.controller";
-import { createUser, getAllUsers } from "@/controllers/user.controller";
+import {
+  getAllUsers,
+  getDashboard,
+  setPin,
+  transfer,
+} from "@/controllers/user.controller";
 import { Router } from "express";
 
 const router = Router();
 
 router.post("/signup", signUp);
 router.post("/login", login);
-
-router.route("/").post(createUser).get(protect, getAllUsers);
+router.get("/dashboard", protect, getDashboard);
+router.post("/transfer", protect, transfer);
+router.patch("/pin", protect, setPin);
+router.route("/").get(protect, getAllUsers);
 
 export default router;
