@@ -5,10 +5,11 @@ import jwt, { JwtPayload } from "jsonwebtoken";
 import { sanitizeUser } from "@/utils/sanitize";
 import {
   LoginInput,
+  loginSchema,
   SignupInput,
   signupSchema,
 } from "@/validators/auth.schema";
-import { Request } from "express";
+import { Request, Response } from "express";
 
 interface CustomJwtPayload extends JwtPayload {
   id: string;
@@ -32,7 +33,7 @@ export const signUp = async (body: any) => {
 };
 
 export const login = async (body: LoginInput) => {
-  const { phoneNumber, password } = body;
+  const { phoneNumber, password } = loginSchema.parse(body);
 
   if (!phoneNumber || !password) {
     throw new AppError("Please provide Phone Number and Password", 400);
@@ -57,10 +58,25 @@ export const login = async (body: LoginInput) => {
   };
 };
 
+export const setPin = async (userId: string, pin: string) => {
+  if (!pin) throw new AppError("No pin was provided", 400);
+
+  const hashedPin = await bcrypt.hash(pin, 12);
+  const user = await prisma.user.update({
+    where: { id: userId },
+    data: { pin: hashedPin },
+  });
+
+  if (!user) throw new AppError("User was not found", 404);
+
+  return user;
+};
+
 export const verifyTokenAndUser = async (req: Request) => {
-  let token;
+  let token = req.cookies?.jwt;
 
   if (
+    !token &&
     req.headers.authorization &&
     req.headers.authorization.startsWith("Bearer")
   ) {
