@@ -8,7 +8,7 @@ export default function Header() {
 
   const handleCopy = () => {
     navigator.clipboard
-      .writeText(user?.phoneNumber as string)
+      .writeText(user?.accountNumber as string)
       .then(() => {
         toast.success("Account copied successfully");
       })
@@ -26,7 +26,7 @@ export default function Header() {
           <div className="flex flex-col space-y-1 items-start">
             <p>{truncateName(user?.name as string)}</p>
             <p className="flex space-x-2 items-center text-sm text-gray-300">
-              <span>{user?.phoneNumber}</span>{" "}
+              <span>{user?.accountNumber}</span>{" "}
               <span>
                 <IoCopyOutline
                   className="cursor-pointer"

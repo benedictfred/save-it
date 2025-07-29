@@ -1,28 +1,50 @@
-import { createContext, useContext } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
+import { User } from "../utils/types";
 
 type AuthContextType = {
-  checkAuthStatus: () => boolean;
+  user: Partial<User> | null;
+  isLoading: boolean;
+  checkAuthStatus: () => Promise<void>;
 };
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const AuthContext = createContext<AuthContextType | null>(null);
 
 function AuthProvider({ children }: { children: React.ReactNode }) {
-  const checkAuthStatus = () => {
-    const expiry = localStorage.getItem("expiry");
-    const currentTime = new Date().getTime();
+  const [user, setUser] = useState<Partial<User> | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const API_URL = import.meta.env.VITE_BASE_URL;
 
-    if (!expiry || currentTime > parseInt(expiry)) {
-      localStorage.removeItem("authenticated");
-      localStorage.removeItem("user");
-      localStorage.removeItem("expiry");
-      return false;
+  const checkAuthStatus = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const res = await fetch(`${API_URL}/users/dashboard`, {
+        credentials: "include",
+      });
+      const responseBody = await res.json();
+      if (!res.ok) {
+        throw new Error(responseBody.message || "Authentication check failed");
+      }
+      setUser(responseBody.data);
+    } catch (err) {
+      console.error("Auth check failed", err);
+      setUser(null);
+    } finally {
+      setIsLoading(false);
     }
+  }, [API_URL]);
 
-    return localStorage.getItem("authenticated") === "true";
-  };
+  useEffect(() => {
+    checkAuthStatus();
+  }, [checkAuthStatus]);
 
   return (
-    <AuthContext.Provider value={{ checkAuthStatus }}>
+    <AuthContext.Provider value={{ user, isLoading, checkAuthStatus }}>
       {children}
     </AuthContext.Provider>
   );

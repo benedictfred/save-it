@@ -8,67 +8,82 @@ import {
 import { SignUpFormData } from "../components/SignUpForm";
 import { CustomError, User } from "../utils/types";
 import { LoginFormData } from "../components/LoginForm";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "./AuthContext";
+import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
+// import { useLocation, useNavigate } from "react-router-dom";
 
 type AccountContextType = {
-  setUser: (user: User) => void;
+  setUser: (user: Partial<User> | null) => void;
   registerUser: (
     data: SignUpFormData
   ) => Promise<{ status: "success" | "error"; message: string }>;
-  login: (
-    data: LoginFormData
-  ) => Promise<{ status: "success" | "error"; message: string; user?: User }>;
-  user: User | null;
-  getUser: () => void;
+  login: (data: LoginFormData) => Promise<{
+    status: "success" | "fail" | "error";
+    message?: string;
+    user: Partial<User> | null;
+  }>;
+  user: Partial<User> | null;
   isLoading: boolean;
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
+  fetchUser: () => void;
 };
 
 const AccountContext = createContext<AccountContextType | undefined>(undefined);
 
 function AccountProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<Partial<User> | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const { checkAuthStatus } = useAuth();
   const navigate = useNavigate();
-  const { pathname } = useLocation();
+  // const { pathname } = useLocation();
 
   // const API_URL = "http://localhost:8000";
   const API_URL = import.meta.env.VITE_BASE_URL;
 
-  const getUser = useCallback(() => {
-    const localUser = JSON.parse(localStorage.getItem("user") as string);
-    const id = localUser?.id;
+  const fetchUser = useCallback(async () => {
+    try {
+      setIsLoading(true);
 
-    const authPages = ["/sign-in", "/sign-up"];
-
-    if (!id) {
-      if (!authPages.includes(pathname)) {
-        navigate("/sign-in");
-      }
-      return;
-    }
-
-    fetch(`${API_URL}/user/${id}`)
-      .then((response) => response.json())
-      .then((data) => setUser(data))
-      .catch((err) => {
-        console.error("Failed to fetch user data:", err);
+      const response = await fetch(`${API_URL}/users/dashboard`, {
+        credentials: "include",
       });
-  }, [API_URL, navigate, pathname]);
+
+      const responseData = await response.json();
+
+      if (!response.ok) {
+        toast.error(responseData.message);
+        navigate("/sign-in", { replace: true });
+        return;
+      }
+
+      const user = responseData.data ?? null;
+      setUser(user);
+    } catch (err) {
+      const customError = err as CustomError;
+      const message = customError.message ?? "Something went wrong";
+
+      toast.error(message);
+      navigate("/sign-in", { replace: true });
+    } finally {
+      setIsLoading(false);
+    }
+  }, [API_URL, navigate]);
 
   useEffect(() => {
-    getUser();
-
     const interval = setInterval(() => {
-      getUser();
+      fetchUser();
+      checkAuthStatus();
     }, 10000);
 
     return () => clearInterval(interval);
-  }, [getUser]);
+  }, [checkAuthStatus, fetchUser]);
 
-  async function login(
-    data: LoginFormData
-  ): Promise<{ status: "success" | "error"; message: string; user?: User }> {
+  async function login(data: LoginFormData): Promise<{
+    status: "success" | "fail" | "error";
+    message?: string;
+    user: Partial<User> | null;
+  }> {
     try {
       setIsLoading(true);
       const response = await fetch(`${API_URL}/auth/login`, {
@@ -76,6 +91,7 @@ function AccountProvider({ children }: { children: React.ReactNode }) {
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "include",
         body: JSON.stringify(data),
       });
 
@@ -86,13 +102,13 @@ function AccountProvider({ children }: { children: React.ReactNode }) {
 
       const responseData = await response.json();
       return {
-        status: "success",
-        message: responseData.message,
-        user: responseData.user,
+        status: responseData.status,
+        user: responseData.user ?? null,
       };
     } catch (error) {
       const customError = error as CustomError;
-      return { status: "error", message: customError.message };
+      console.log(customError.message);
+      return { status: "fail", message: customError.message, user: null };
     } finally {
       setIsLoading(false);
     }
@@ -133,7 +149,7 @@ function AccountProvider({ children }: { children: React.ReactNode }) {
         login,
         setUser,
         user,
-        getUser,
+        fetchUser,
         isLoading,
         setIsLoading,
       }}

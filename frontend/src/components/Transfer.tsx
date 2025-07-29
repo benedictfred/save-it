@@ -6,20 +6,19 @@ import { toast } from "react-toastify";
 
 export default function Transfer() {
   const [firstPin, setFirstPin] = useState("");
-  const { user, getUser } = useAccount();
+  const { user, fetchUser } = useAccount();
   const { setPin } = useTransfer();
 
   async function handleSetPin() {
     const { status, message } = await setPin({
       pin: firstPin,
-      phoneNumber: user?.phoneNumber,
     });
 
     if (status === "success") {
       toast.success(message);
-      getUser();
+      fetchUser();
     }
-    if (status === "error") {
+    if (status === "fail" || status === "error") {
       toast.error(message);
     }
   }
@@ -29,7 +28,7 @@ export default function Transfer() {
       <div className="flex flex-col space-y-3 justify-center items-center py-7">
         <Outlet />
 
-        {!user?.pin ? (
+        {!user?.hasPin && (
           <div className="absolute bg-black/50 backdrop-blur-sm inset-0 flex justify-center items-center z-50">
             <div className="bg-black bg-opacity-50 flex justify-center items-center z-10">
               <div className="bg-black p-5 rounded-md">
@@ -51,7 +50,7 @@ export default function Transfer() {
               </div>
             </div>
           </div>
-        ) : null}
+        )}
       </div>
     </section>
   );

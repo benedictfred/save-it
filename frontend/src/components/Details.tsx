@@ -6,12 +6,11 @@ import { useTransfer } from "../contexts/TranferContext";
 import { useAccount } from "../contexts/AccountContext";
 
 export default function Details() {
-  const { getUser, user } = useAccount();
+  const { fetchUser } = useAccount();
   const { transferData, transferAmount } = useTransfer();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [userPin, setUserPin] = useState("");
   const navigate = useNavigate();
-  const { setPin } = useTransfer();
 
   useEffect(() => {
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
@@ -27,31 +26,27 @@ export default function Details() {
   }, []);
 
   const handleConfirmTransaction = async () => {
-    const { status: pinStatus } = await setPin({
+    const { message, status } = await transferAmount({
+      ...transferData,
       pin: userPin,
-      phoneNumber: user?.phoneNumber,
+      amount: Number(transferData.amount),
     });
-    if (pinStatus === "success") {
-      const { message, status } = await transferAmount(transferData);
-      if (status === "success") {
-        toast.success(message);
-        getUser();
-        return navigate("/transfer");
-      }
 
-      if (status === "error") {
-        toast.error(message);
-      }
+    if (status === "success") {
+      toast.success(message);
+      fetchUser();
       setUserPin("");
       setIsModalOpen(false);
-    } else {
-      toast.error("Invalid PIN");
+      return navigate("/transfer");
+    } else if (status === "fail" || status === "error") {
+      toast.error(message);
+      setIsModalOpen(false);
     }
   };
 
   if (
     !transferData.amount ||
-    !transferData.recipientNumber ||
+    !transferData.recipientAccNumber ||
     !transferData.recipientName
   ) {
     return <Navigate to="/transfer" />;
@@ -71,7 +66,7 @@ export default function Details() {
         </div>
         <div className="flex justify-between items-center px-2">
           <p>Account No</p>
-          <p className="text-gray-300">{transferData.recipientNumber}</p>
+          <p className="text-gray-300">{transferData.recipientAccNumber}</p>
         </div>
       </div>
       <button

@@ -5,13 +5,15 @@ import { FaRegEye, FaRegEyeSlash } from "../utils/icons";
 import Transactions from "./Transactions";
 import Loader from "./Loader";
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function Home() {
   const [hideBalance, setHideBalance] = useState(true);
+  const { user, fetchUser } = useAccount();
 
-  const { user } = useAccount();
-  const slicedTransaction = user?.transactions.slice(0, 5);
+  useEffect(() => {
+    fetchUser();
+  }, [fetchUser]);
 
   if (user === null) return <Loader />;
   return (
@@ -62,7 +64,7 @@ export default function Home() {
           </p>
         ) : (
           <div className="divide-y divide-gray-400 space-y-4">
-            {slicedTransaction?.map((transaction: Transaction) => (
+            {user?.recentTransactions?.map((transaction: Transaction) => (
               <Transactions transaction={transaction} key={transaction.id} />
             ))}
           </div>

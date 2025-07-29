@@ -30,7 +30,12 @@ export default function Transactions({ transaction }: TransactionProp) {
       </div>
       <div className="flex flex-col items-center">
         <p className="text-xl">{formatCurrency(transaction.amount)}</p>
-        <p className="text-success italic">success</p>
+        {transaction.status === "success" && (
+          <p className="text-success italic">success</p>
+        )}
+        {transaction.status === "failed" && (
+          <p className="text-failed italic">failed</p>
+        )}
       </div>
     </div>
   );

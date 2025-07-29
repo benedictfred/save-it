@@ -7,10 +7,8 @@ import { useAccount } from "../contexts/AccountContext";
 
 export type TransferFormData = {
   amount: number;
-  recipientNumber: string;
-  recipientName: string;
-  senderNumber?: string;
-  senderName?: string;
+  recipientAccNumber: string;
+  recipientName?: string;
 };
 
 export default function TransferForm() {
@@ -35,9 +33,9 @@ export default function TransferForm() {
     }
     const error = await getRecipientName(phoneNumber);
     if (error) {
-      setError("recipientNumber", { type: "manual", message: error });
+      setError("recipientAccNumber", { type: "manual", message: error });
     } else {
-      clearErrors("recipientNumber");
+      clearErrors("recipientAccNumber");
     }
   };
 
@@ -89,15 +87,15 @@ export default function TransferForm() {
             className="text-black py-2 pl-2 w-full border rounded-md outline-none"
             maxLength={10}
             placeholder="Enter phone number"
-            {...register("recipientNumber", {
+            {...register("recipientAccNumber", {
               required: "Account No is required",
               onChange: handleChange,
             })}
           />
           <p className="uppercase text-gray-400">{recipientName || null}</p>
           <input type="hidden" {...register("recipientName")} />
-          {errors.recipientNumber && (
-            <p className="text-red-500">{errors.recipientNumber.message}</p>
+          {errors.recipientAccNumber && (
+            <p className="text-red-500">{errors.recipientAccNumber.message}</p>
           )}
         </div>
         <button className="p-3 mt-3 w-full bg-primary rounded-md  text-black">

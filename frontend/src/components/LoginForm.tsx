@@ -17,33 +17,15 @@ export default function LoginForm() {
     formState: { errors, isSubmitting },
   } = useForm<LoginFormData>();
   const navigate = useNavigate();
-  const API_URL = import.meta.env.VITE_BASE_URL;
-
-  const { login, setUser } = useAccount();
+  const { login } = useAccount();
 
   const onSubmit = async (data: LoginFormData) => {
-    const { status, message, user } = await login(data);
+    const { status, message } = await login(data);
 
-    if (status === "success" && user) {
-      toast.success(message);
-
-      const expiryTime = new Date().getTime() + 60 * 60 * 1000;
-      localStorage.setItem("authenticated", "true");
-      localStorage.setItem("user", JSON.stringify(user));
-      localStorage.setItem("expiry", expiryTime.toString());
-
-      // Fetch the full user data immediately after login
-      const fetchedUser = await fetch(`${API_URL}/user/${user.id}`)
-        .then((response) => response.json())
-        .catch((err) => {
-          toast.error(err.message);
-        });
-
-      if (fetchedUser) {
-        setUser(fetchedUser);
-        navigate("/home", { replace: true });
-      }
-    } else if (status === "error") {
+    if (status === "success") {
+      toast.success("Login Successful");
+      navigate("/home", { replace: true });
+    } else if (status === "fail" || status === "error") {
       toast.error(message);
     }
   };
