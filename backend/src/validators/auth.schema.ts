@@ -6,8 +6,12 @@ export const signupSchema = z
     email: z.email("input a correct email format"),
     phoneNumber: z
       .string()
-      .length(10, "your phone number should be without the first zero"),
-    // .max(10, "your phone number should not be more than 10"),
+      .min(10, "Phone number must be at least 10 digits")
+      .max(11, "Phone number must be at most 11 digits")
+      .transform((val) => {
+        if (val.length === 10) return `0${val}`;
+        return val;
+      }),
     password: z
       .string()
       .min(6, "password should be at least 6 characters long"),
@@ -22,7 +26,14 @@ export const signupSchema = z
 export type SignupInput = z.infer<typeof signupSchema>;
 
 export const loginSchema = z.object({
-  phoneNumber: z.string(),
+  phoneNumber: z
+    .string()
+    .min(10, "Phone number must be at least 10 digits")
+    .max(11, "Phone number must be at most 11 digits")
+    .transform((val) => {
+      if (val.length === 10) return `0${val}`;
+      return val;
+    }),
   password: z.string(),
 });
 

@@ -3,11 +3,7 @@ import catchAsync from "@/utils/catchAsync";
 import { NextFunction, Request, Response } from "express";
 import * as userService from "@/services/user.service";
 import { User } from "@prisma/client";
-import {
-  pinSchema,
-  TransferInput,
-  transferSchema,
-} from "@/validators/user.schema";
+import { sanitizeUser } from "@/utils/sanitize";
 
 export const getAllUsers = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -31,7 +27,7 @@ export const getDashboard = catchAsync(
     res.status(200).json({
       status: "success",
       data: {
-        ...currentUser,
+        ...sanitizeUser(currentUser as User),
         hasPin: Boolean(currentUser?.pin),
         recentTransactions,
       },
@@ -39,35 +35,15 @@ export const getDashboard = catchAsync(
   }
 );
 
-export const transfer = catchAsync(
+export const resolveAccount = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const { amount, recipientAccNumber, pin }: TransferInput =
-      transferSchema.parse(req.body);
+    const { accountNumber } = req.params;
 
-    const transactionStatus = await userService.transfer({
-      senderId: req.user!.id!,
-      recipientAccNumber,
-      pin,
-      amount,
-    });
+    const user = await userService.resolveAccount(accountNumber);
 
     res.status(200).json({
       status: "success",
-      message: "Transfer successful",
-      data: transactionStatus,
-    });
-  }
-);
-
-export const setPin = catchAsync(
-  async (req: Request, res: Response, next: NextFunction) => {
-    const { pin } = pinSchema.parse(req.body);
-
-    await userService.setPin(req.user!.id!, pin);
-
-    res.status(200).json({
-      status: "success",
-      message: "Pin set successfully",
+      data: user,
     });
   }
 );
