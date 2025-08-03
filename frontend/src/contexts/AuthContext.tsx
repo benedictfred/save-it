@@ -1,50 +1,25 @@
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useState,
-} from "react";
+import { createContext, useCallback, useContext } from "react";
 import { User } from "../utils/types";
+import { useFetchUser } from "../hooks/useFetchUser";
 
 type AuthContextType = {
-  user: Partial<User> | null;
+  user: Partial<User> | undefined;
   isLoading: boolean;
+  isError: boolean;
   checkAuthStatus: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
 function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<Partial<User> | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const API_URL = import.meta.env.VITE_BASE_URL;
+  const { data: user, isLoading, refetch, isError } = useFetchUser();
 
   const checkAuthStatus = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      const res = await fetch(`${API_URL}/users/dashboard`, {
-        credentials: "include",
-      });
-      const responseBody = await res.json();
-      if (!res.ok) {
-        throw new Error(responseBody.message || "Authentication check failed");
-      }
-      setUser(responseBody.data);
-    } catch (err) {
-      console.error("Auth check failed", err);
-      setUser(null);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [API_URL]);
-
-  useEffect(() => {
-    checkAuthStatus();
-  }, [checkAuthStatus]);
+    await refetch();
+  }, [refetch]);
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, checkAuthStatus }}>
+    <AuthContext.Provider value={{ user, isLoading, checkAuthStatus, isError }}>
       {children}
     </AuthContext.Provider>
   );

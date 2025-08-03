@@ -1,19 +1,15 @@
-import { useAccount } from "../contexts/AccountContext";
 import { formatCurrency, truncateName } from "../utils/helpers";
 import { Transaction } from "../utils/types";
 import { FaRegEye, FaRegEyeSlash } from "../utils/icons";
 import Transactions from "./Transactions";
 import Loader from "./Loader";
 import { Link } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useFetchUser } from "../hooks/useFetchUser";
 
 export default function Home() {
   const [hideBalance, setHideBalance] = useState(true);
-  const { user, fetchUser } = useAccount();
-
-  useEffect(() => {
-    fetchUser();
-  }, [fetchUser]);
+  const { data: user } = useFetchUser();
 
   if (user === null) return <Loader />;
   return (

@@ -9,12 +9,10 @@ import Details from "./components/Details";
 import TransferForm from "./components/TransferForm";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
-import { useAccount } from "./contexts/AccountContext";
-import Loader from "./components/Loader";
 import History from "./components/History";
+import GlobalLoader from "./components/GlobalLoader";
 
 export default function App() {
-  const { isLoading } = useAccount();
   return (
     <>
       <Routes>
@@ -37,7 +35,7 @@ export default function App() {
         </Route>
         <Route path="*" element={<NotFound />} />
       </Routes>
-      {isLoading && <Loader />}
+      <GlobalLoader />
       <ToastContainer aria-label="toast-message" className="max-md:w-[70%]" />
     </>
   );

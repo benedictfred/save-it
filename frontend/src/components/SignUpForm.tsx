@@ -1,9 +1,8 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
-import { useAccount } from "../contexts/AccountContext";
-import { toast } from "react-toastify";
 import { useState } from "react";
 import { FaRegEye, FaRegEyeSlash } from "../utils/icons";
+import { useRegister } from "../hooks/useRegister";
 
 export type SignUpFormData = {
   name: string;
@@ -20,20 +19,10 @@ export default function SignUpForm() {
     formState: { errors, isSubmitting },
   } = useForm<SignUpFormData>();
 
-  const navigate = useNavigate();
-
-  const { registerUser } = useAccount();
+  const { mutate: registerUser } = useRegister();
 
   const onSubmit = async (data: SignUpFormData) => {
-    const { status, message } = await registerUser(data);
-    if (status === "success") {
-      toast.success(message);
-      return navigate("/sign-in");
-    }
-
-    if (status === "error") {
-      return toast.error(message);
-    }
+    registerUser(data);
   };
   return (
     <form

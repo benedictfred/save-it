@@ -1,9 +1,8 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
-import { toast } from "react-toastify";
-import { useAccount } from "../contexts/AccountContext";
 import { FaRegEye, FaRegEyeSlash } from "../utils/icons";
 import { useState } from "react";
+import { useLogin } from "../hooks/useLogin";
 
 export type LoginFormData = {
   phoneNumber: string;
@@ -16,18 +15,10 @@ export default function LoginForm() {
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<LoginFormData>();
-  const navigate = useNavigate();
-  const { login } = useAccount();
+  const { mutate: login } = useLogin();
 
-  const onSubmit = async (data: LoginFormData) => {
-    const { status, message } = await login(data);
-
-    if (status === "success") {
-      toast.success("Login Successful");
-      navigate("/home", { replace: true });
-    } else if (status === "fail" || status === "error") {
-      toast.error(message);
-    }
+  const onSubmit = (data: LoginFormData) => {
+    login(data);
   };
 
   return (
