@@ -1,7 +1,7 @@
 import { LoginFormData } from "../components/LoginForm";
 import { SignUpFormData } from "../components/SignUpForm";
 import { API_URL } from "../utils/constants";
-import { User } from "../utils/types";
+import { setPinData, User } from "../utils/types";
 
 interface LoginResponse {
   status: "success" | "fail" | "error";
@@ -51,4 +51,25 @@ export async function registerUser(
   }
 
   return res.json();
+}
+
+export async function setPin(
+  payload: setPinData
+): Promise<{ status: "success" | "fail" | "error"; message: string }> {
+  const response = await fetch(`${API_URL}/auth/pin`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || "Pin was not set");
+  }
+
+  const responseData = await response.json();
+  return responseData;
 }

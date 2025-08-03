@@ -1,27 +1,13 @@
 import { useState } from "react";
 import { Outlet } from "react-router-dom";
-import { useAccount } from "../contexts/AccountContext";
-import { useTransfer } from "../contexts/TranferContext";
-import { toast } from "react-toastify";
+import { useFetchUser } from "../hooks/useFetchUser";
+import { useSetPin } from "../hooks/useSetPin";
 
 export default function Transfer() {
-  const [firstPin, setFirstPin] = useState("");
-  const { user, fetchUser } = useAccount();
-  const { setPin } = useTransfer();
+  const [pin, setPin] = useState("");
+  const { data: user } = useFetchUser();
+  const { mutate: handleSetPin } = useSetPin();
 
-  async function handleSetPin() {
-    const { status, message } = await setPin({
-      pin: firstPin,
-    });
-
-    if (status === "success") {
-      toast.success(message);
-      fetchUser();
-    }
-    if (status === "fail" || status === "error") {
-      toast.error(message);
-    }
-  }
   return (
     <section className="w-full p-5 overflow-y-auto">
       <p>Send Money</p>
@@ -38,12 +24,12 @@ export default function Transfer() {
                   className="w-full border rounded-md py-2 px-2 mt-3 text-black outline-none"
                   placeholder="Enter your 4-digit pin"
                   maxLength={4}
-                  value={firstPin}
-                  onChange={(e) => setFirstPin(e.target.value)}
+                  value={pin}
+                  onChange={(e) => setPin(e.target.value)}
                 />
                 <button
                   className="bg-primary text-black py-2 px-4 rounded-md w-full mt-3"
-                  onClick={handleSetPin}
+                  onClick={() => handleSetPin({ pin })}
                 >
                   Confirm
                 </button>

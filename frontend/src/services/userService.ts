@@ -14,3 +14,16 @@ export const fetchUser = async (): Promise<Partial<User>> => {
 
   return responseData.data;
 };
+
+export async function getRecipientName(accountNumber: string): Promise<string> {
+  const response = await fetch(`${API_URL}/users/${accountNumber}`, {
+    credentials: "include",
+  });
+
+  if (!response.ok) {
+    throw new Error("User not found");
+  }
+
+  const { data } = await response.json();
+  return data.name;
+}

@@ -2,7 +2,9 @@ import { useForm } from "react-hook-form";
 import { TbCurrencyNaira } from "../utils/icons";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
-import { useTransfer } from "../contexts/TranferContext";
+import { useRecipientName } from "../hooks/useRecipientName";
+import { useQueryClient } from "@tanstack/react-query";
+import { useFetchUser } from "../hooks/useFetchUser";
 import { useAccount } from "../contexts/AccountContext";
 
 export type TransferFormData = {
@@ -18,30 +20,47 @@ export default function TransferForm() {
     setValue,
     setError,
     clearErrors,
+    watch,
     formState: { errors },
   } = useForm<TransferFormData>();
-  const { setTransferData, getRecipientName, recipientName, setRecipientName } =
-    useTransfer();
-  const { user } = useAccount();
+  const { setTransferData } = useAccount();
   const navigate = useNavigate();
-
-  const handleChange = async (e: React.FocusEvent<HTMLInputElement>) => {
-    const phoneNumber = e.target.value.trim();
-    if (phoneNumber.length < 10) {
-      setRecipientName("");
-      return null;
-    }
-    const error = await getRecipientName(phoneNumber);
-    if (error) {
-      setError("recipientAccNumber", { type: "manual", message: error });
-    } else {
-      clearErrors("recipientAccNumber");
-    }
-  };
+  const recipientAccNumber = watch("recipientAccNumber");
+  const queryClient = useQueryClient();
+  const { data: user } = useFetchUser();
+  const { data: recipientName, error } = useRecipientName(
+    recipientAccNumber,
+    recipientAccNumber?.trim().length === 10
+  );
 
   useEffect(() => {
-    setValue("recipientName", recipientName || "");
-  }, [setValue, recipientName]);
+    if (!recipientAccNumber || recipientAccNumber.trim().length < 10) {
+      setValue("recipientName", "");
+      queryClient.removeQueries({
+        queryKey: ["recipient", recipientAccNumber],
+      });
+      clearErrors("recipientAccNumber");
+      return;
+    }
+
+    if (error) {
+      setError("recipientAccNumber", {
+        type: "manual",
+        message: error.toString(),
+      });
+    } else {
+      clearErrors("recipientAccNumber");
+      setValue("recipientName", recipientName || "");
+    }
+  }, [
+    recipientAccNumber,
+    recipientName,
+    error,
+    setValue,
+    setError,
+    clearErrors,
+    queryClient,
+  ]);
 
   function onSubmit(data: TransferFormData) {
     const newData = {
@@ -50,7 +69,6 @@ export default function TransferForm() {
       senderName: user?.name,
     };
     setTransferData(newData);
-    setRecipientName("");
     navigate("/transfer/confirm-details");
   }
   return (
@@ -89,7 +107,6 @@ export default function TransferForm() {
             placeholder="Enter phone number"
             {...register("recipientAccNumber", {
               required: "Account No is required",
-              onChange: handleChange,
             })}
           />
           <p className="uppercase text-gray-400">{recipientName || null}</p>

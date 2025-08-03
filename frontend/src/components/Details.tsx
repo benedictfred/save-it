@@ -1,16 +1,15 @@
 import { Navigate, useNavigate } from "react-router-dom";
 import { formatCurrency } from "../utils/helpers";
 import { useEffect, useState } from "react";
-import { toast } from "react-toastify";
-import { useTransfer } from "../contexts/TranferContext";
+import { useTransaction } from "../hooks/useTransaction";
 import { useAccount } from "../contexts/AccountContext";
 
 export default function Details() {
-  const { fetchUser } = useAccount();
-  const { transferData, transferAmount } = useTransfer();
+  const { transferData } = useAccount();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [userPin, setUserPin] = useState("");
   const navigate = useNavigate();
+  const { mutate: handleTransfer } = useTransaction();
 
   useEffect(() => {
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
@@ -25,23 +24,24 @@ export default function Details() {
     };
   }, []);
 
-  const handleConfirmTransaction = async () => {
-    const { message, status } = await transferAmount({
-      ...transferData,
-      pin: userPin,
-      amount: Number(transferData.amount),
-    });
-
-    if (status === "success") {
-      toast.success(message);
-      fetchUser();
-      setUserPin("");
-      setIsModalOpen(false);
-      return navigate("/transfer");
-    } else if (status === "fail" || status === "error") {
-      toast.error(message);
-      setIsModalOpen(false);
-    }
+  const handleConfirmTransaction = () => {
+    handleTransfer(
+      {
+        ...transferData,
+        pin: userPin,
+        amount: Number(transferData.amount),
+      },
+      {
+        onSuccess: () => {
+          setUserPin("");
+          setIsModalOpen(false);
+          navigate("/transfer");
+        },
+        onError: () => {
+          setIsModalOpen(false);
+        },
+      }
+    );
   };
 
   if (
