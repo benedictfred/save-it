@@ -5,11 +5,11 @@ import Transactions from "./Transactions";
 import Loader from "./Loader";
 import { Link } from "react-router-dom";
 import { useState } from "react";
-import { useFetchUser } from "../hooks/useFetchUser";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function Home() {
   const [hideBalance, setHideBalance] = useState(true);
-  const { data: user } = useFetchUser();
+  const { user } = useAuth();
 
   if (user === null) return <Loader />;
   return (

@@ -4,8 +4,8 @@ import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { useRecipientName } from "../hooks/useRecipientName";
 import { useQueryClient } from "@tanstack/react-query";
-import { useFetchUser } from "../hooks/useFetchUser";
 import { useAccount } from "../contexts/AccountContext";
+import { useAuth } from "../contexts/AuthContext";
 
 export type TransferFormData = {
   amount: number;
@@ -27,7 +27,7 @@ export default function TransferForm() {
   const navigate = useNavigate();
   const recipientAccNumber = watch("recipientAccNumber");
   const queryClient = useQueryClient();
-  const { data: user } = useFetchUser();
+  const { user } = useAuth();
   const { data: recipientName, error } = useRecipientName(
     recipientAccNumber,
     recipientAccNumber?.trim().length === 10

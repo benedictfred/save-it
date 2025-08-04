@@ -3,7 +3,7 @@ import { getTransactionHistory } from "../services/transactionService";
 
 export const useTransactionHistory = () => {
   return useQuery({
-    queryKey: ["transaction-history"],
+    queryKey: ["transactions"],
     queryFn: getTransactionHistory,
   });
 };

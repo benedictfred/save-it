@@ -1,10 +1,10 @@
 import { toast } from "react-toastify";
-import { useAccount } from "../contexts/AccountContext";
 import { truncateName } from "../utils/helpers";
 import { IoMdNotifications, IoCopyOutline } from "../utils/icons";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function Header() {
-  const { user } = useAccount();
+  const { user } = useAuth();
 
   const handleCopy = () => {
     navigator.clipboard

@@ -53,6 +53,19 @@ export async function registerUser(
   return res.json();
 }
 
+export async function logout() {
+  const res = await fetch(`${API_URL}/auth/logout`, {
+    method: "POST",
+    credentials: "include",
+  });
+
+  if (!res.ok) {
+    throw new Error("Logout failed");
+  }
+
+  return res.json();
+}
+
 export async function setPin(
   payload: setPinData
 ): Promise<{ status: "success" | "fail" | "error"; message: string }> {

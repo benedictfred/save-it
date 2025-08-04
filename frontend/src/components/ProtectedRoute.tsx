@@ -8,14 +8,14 @@ export default function ProtectedRoute({
 }: {
   children: React.ReactNode;
 }) {
-  const { user, isLoading, isError } = useAuth();
+  const { user, isLoading, error } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!isLoading && (!user || isError)) {
+    if (!isLoading && (!user || error)) {
       navigate("/sign-in", { replace: true });
     }
-  }, [isLoading, user, isError, navigate]);
+  }, [isLoading, user, error, navigate]);
 
   if (isLoading) return <Loader />;
 

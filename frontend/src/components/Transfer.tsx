@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { Outlet } from "react-router-dom";
-import { useFetchUser } from "../hooks/useFetchUser";
 import { useSetPin } from "../hooks/useSetPin";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function Transfer() {
   const [pin, setPin] = useState("");
-  const { data: user } = useFetchUser();
+  const { user } = useAuth();
   const { mutate: handleSetPin } = useSetPin();
 
   return (

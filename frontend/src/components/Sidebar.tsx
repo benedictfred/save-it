@@ -6,16 +6,24 @@ import {
   MdCallReceived,
   LuLogOut,
 } from "../utils/icons";
+import { useQueryClient } from "@tanstack/react-query";
+import { logout } from "../services/authService";
+import { toast } from "react-toastify";
 
 export default function Sidebar() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
-  function handleLogOut() {
-    localStorage.removeItem("authenticated");
-    localStorage.removeItem("user");
-    localStorage.removeItem("expiry");
-    navigate("/sign-in");
-  }
+  const handleLogOut = async () => {
+    try {
+      await logout();
+      queryClient.clear();
+      toast.success("Logged out successfully");
+      navigate("/login");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not log out");
+    }
+  };
   return (
     <nav className="h-screen w-[23%] max-sm:px-4 md:px-16 lg:px-3 py-16 border-r border-gray-900 lg:bg-gradient-to-b lg:from-black lg:to-gray-900 max-md:fixed max-md:bottom-0 max-md:w-full max-md:h-20 max-md:py-0">
       <ul className="flex flex-col space-y-7 max-md:flex-row max-md:justify-between max-md:items-center max-md:space-y-0 max-md:space-x-2 max-md:backdrop-blur-xl max-md:h-20 max-md:z-50 max-md:border-none max-md:rounded-t-xl">

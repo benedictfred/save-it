@@ -1,8 +1,6 @@
-import { createContext, useContext, useEffect, useState } from "react";
-import { toast } from "react-toastify";
-import { useLocation, useNavigate } from "react-router-dom";
-import { useFetchUser } from "../hooks/useFetchUser";
+import { createContext, useContext, useState } from "react";
 import { TransferFormData } from "../components/TransferForm";
+import { useTransactionStream } from "../hooks/useTransactionStream";
 
 type AccountContextType = {
   transferData: TransferFormData;
@@ -12,20 +10,10 @@ type AccountContextType = {
 const AccountContext = createContext<AccountContextType | undefined>(undefined);
 
 function AccountProvider({ children }: { children: React.ReactNode }) {
+  useTransactionStream();
   const [transferData, setTransferData] = useState<TransferFormData>(
     {} as TransferFormData
   );
-  const { error } = useFetchUser();
-  const navigate = useNavigate();
-  const { pathname } = useLocation();
-
-  useEffect(() => {
-    const authPages = ["/sign-in", "/sign-up"];
-    if (error && !authPages.includes(pathname)) {
-      toast.error((error as Error).message);
-      navigate("/sign-in", { replace: true });
-    }
-  }, [error, navigate, pathname]);
 
   return (
     <AccountContext.Provider
