@@ -1,5 +1,6 @@
 import { prisma } from "@/prisma";
 import AppError from "@/utils/appError";
+import { sendEvent } from "@/utils/sse";
 import bcrypt from "bcrypt";
 
 export async function transfer({
@@ -69,7 +70,7 @@ export async function transfer({
       });
 
       // Log credit
-      await tx.transaction.create({
+      const creditTx = await tx.transaction.create({
         data: {
           amount,
           date: new Date(),
@@ -83,13 +84,30 @@ export async function transfer({
         },
       });
 
+      // Send SSE event to sender
+      sendEvent(sender.id, {
+        event: "transaction",
+        data: {
+          type: "debit",
+          transaction: debitTx,
+        },
+      });
+
+      // Send SSE event to recipient
+      sendEvent(recipient.id, {
+        event: "transaction",
+        data: {
+          type: "credit",
+          transaction: creditTx,
+        },
+      });
       return debitTx;
     });
 
     return result;
   } catch (err) {
     // log a failed transaction for the sender
-    await prisma.transaction.create({
+    const failedTx = await prisma.transaction.create({
       data: {
         amount,
         date: new Date(),
@@ -100,6 +118,15 @@ export async function transfer({
         recipientName: recipient.name,
         recipientAccNumber: recipient.accountNumber,
         userId: sender.id,
+      },
+    });
+
+    // Send SSE event for failed transaction
+    sendEvent(sender.id, {
+      event: "transaction",
+      data: {
+        type: "debit",
+        transaction: failedTx,
       },
     });
 

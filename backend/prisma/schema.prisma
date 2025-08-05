@@ -23,7 +23,10 @@ model User {
   passwordChangedAt DateTime?
   pin           String?      
   balance       Float         @default(2000)
-  transactions  Transaction[] // 1-to-many relationship
+  resetToken       String? 
+  resetTokenExpiry DateTime?
+  transactions  Transaction[] 
+  notifications Notification[]
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
 }
@@ -40,6 +43,17 @@ model Transaction {
   senderAccNumber  String?
   userId          String
   user            User      @relation(fields: [userId], references: [id])
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  title     String
+  body      String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id])
 }
 
 enum TransactionType {

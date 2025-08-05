@@ -2,6 +2,7 @@ import catchAsync from "@/utils/catchAsync";
 import { TransferInput, transferSchema } from "@/validators/user.schema";
 import { NextFunction, Request, Response } from "express";
 import * as transactionService from "@/services/transaction.service";
+import { addClient } from "@/utils/sse";
 
 export const transfer = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -33,3 +34,7 @@ export const getHistory = catchAsync(
     });
   }
 );
+
+export const transactionEventHandler = (req: Request, res: Response) => {
+  addClient(req.user?.id!, req, res);
+};
