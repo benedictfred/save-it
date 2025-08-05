@@ -1,24 +1,28 @@
 import { prisma } from "@/prisma";
 import AppError from "@/utils/appError";
 import bcrypt from "bcrypt";
+import crypto from "crypto";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { sanitizeUser } from "@/utils/sanitize";
 import {
   LoginInput,
   loginSchema,
+  ResetPasswordInput,
+  resetPasswordSchema,
   SignupInput,
   signupSchema,
 } from "@/validators/auth.schema";
-import { Request, Response } from "express";
+import { Request } from "express";
+import { sendEmail } from "@/utils/email";
+import { resetPasswordTemplate } from "@/templates/resetPasswordEmail";
 
 interface CustomJwtPayload extends JwtPayload {
   id: string;
   iat?: number;
 }
 
-export const signUp = async (body: any) => {
-  const { name, phoneNumber, password, email }: SignupInput =
-    signupSchema.parse(body);
+export const signUp = async (body: SignupInput) => {
+  const { name, phoneNumber, password, email } = signupSchema.parse(body);
 
   const user = await prisma.user.create({
     data: { name, phoneNumber, password, email, accountNumber: phoneNumber },
@@ -70,6 +74,84 @@ export const setPin = async (userId: string, pin: string) => {
   if (!user) throw new AppError("User was not found", 404);
 
   return user;
+};
+
+export const forgotPassword = async (email: string) => {
+  const user = await prisma.user.findUnique({
+    where: { email },
+  });
+
+  if (!user) throw new AppError("User was not found", 404);
+
+  const resetToken = crypto.randomBytes(32).toString("hex");
+  const hashedResetToken = crypto
+    .createHash("sha256")
+    .update(resetToken)
+    .digest("hex");
+  const resetTokenExpiry = new Date(Date.now() + 10 * 60 * 1000);
+
+  await prisma.user.update({
+    where: { email },
+    data: {
+      resetToken: hashedResetToken,
+      resetTokenExpiry,
+    },
+  });
+
+  const resetLink = `http://localhost:5173/reset-password/${resetToken}`;
+  try {
+    await sendEmail({
+      email,
+      subject: "Your password reset link (valid for 10mins)",
+      message: resetPasswordTemplate(resetLink),
+    });
+  } catch (err) {
+    await prisma.user.update({
+      where: { email },
+      data: {
+        resetToken: null,
+        resetTokenExpiry: null,
+      },
+    });
+    throw new AppError(
+      err instanceof Error ? err.message : "Failed to send email",
+      500
+    );
+  }
+};
+
+export const resetPassword = async (
+  body: ResetPasswordInput,
+  token: string
+) => {
+  const { password } = resetPasswordSchema.parse(body);
+  const hashedResetToken = crypto
+    .createHash("sha256")
+    .update(token)
+    .digest("hex");
+
+  const user = await prisma.user.findFirst({
+    where: {
+      resetToken: hashedResetToken,
+      resetTokenExpiry: { gte: new Date() },
+    },
+  });
+
+  if (!user) {
+    throw new AppError("Token is invalid or has expired", 400);
+  }
+
+  const hashedPassword = await bcrypt.hash(password, 12);
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: {
+      password: hashedPassword,
+      passwordChangedAt: new Date(),
+      resetToken: null,
+      resetTokenExpiry: null,
+    },
+  });
 };
 
 export const verifyTokenAndUser = async (req: Request) => {
