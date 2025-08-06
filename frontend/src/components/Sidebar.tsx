@@ -17,9 +17,9 @@ export default function Sidebar() {
   const handleLogOut = async () => {
     try {
       await logout();
-      queryClient.clear();
+      queryClient.removeQueries();
       toast.success("Logged out successfully");
-      navigate("/login");
+      navigate("/sign-in");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Could not log out");
     }

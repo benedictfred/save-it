@@ -4,7 +4,7 @@ import { Transaction, TransferAmount } from "../utils/types";
 export async function transferAmount(
   data: TransferAmount
 ): Promise<{ status: "success" | "fail" | "error"; message: string }> {
-  const response = await fetch(`${API_URL}/transaction/transfer`, {
+  const response = await fetch(`${API_URL}/transactions/transfer`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -23,7 +23,7 @@ export async function transferAmount(
 }
 
 export async function getTransactionHistory(): Promise<Transaction[] | []> {
-  const res = await fetch(`${API_URL}/transaction/history`, {
+  const res = await fetch(`${API_URL}/transactions/history`, {
     credentials: "include",
   });
   const { data } = await res.json();

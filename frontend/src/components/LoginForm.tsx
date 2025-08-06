@@ -65,9 +65,9 @@ export default function LoginForm() {
             onClick={() => setShowPassword(!showPassword)}
           >
             {showPassword ? (
-              <FaRegEye size={25} />
-            ) : (
               <FaRegEyeSlash size={25} />
+            ) : (
+              <FaRegEye size={25} />
             )}
           </span>
         </div>
@@ -88,7 +88,9 @@ export default function LoginForm() {
           Sign Up
         </Link>
       </div>
-      <p className="text-center text-blue-500">Forgot Password ?</p>
+      <Link to="/forgot-password" className="text-center text-blue-500">
+        Forgot Password ?
+      </Link>
     </form>
   );
 }

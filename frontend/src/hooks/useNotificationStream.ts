@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { API_URL } from "../utils/constants";
 
-export function useTransactionStream() {
+export function useNotificationStream() {
   const queryClient = useQueryClient();
   const reconnectTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -10,19 +10,21 @@ export function useTransactionStream() {
     let eventSource: EventSource | null = null;
 
     const connect = () => {
-      eventSource = new EventSource(`${API_URL}/transactions/stream`, {
+      eventSource = new EventSource(`${API_URL}/notifications/stream`, {
         withCredentials: true,
       });
 
       eventSource.onmessage = (event) => {
         const data = JSON.parse(event.data);
-        if (data.event === "transaction" || data.event === "notification") {
+        if (data.event === "notification") {
           queryClient.invalidateQueries({ queryKey: ["user"] });
         }
       };
 
       eventSource.onerror = () => {
-        console.warn("Transaction stream closed due to error, reconnecting...");
+        console.warn(
+          "Notification stream closed due to error, reconnecting..."
+        );
         eventSource?.close();
 
         reconnectTimeout.current = setTimeout(connect, 3000);

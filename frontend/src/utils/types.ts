@@ -7,7 +7,9 @@ export type User = {
   balance: number;
   hasPin: boolean;
   transactions: Transaction[] | [];
+  notifications: Notification[] | [];
   recentTransactions: Transaction[] | [];
+  recentNotifications: Notification[] | [];
 };
 
 export type Transaction = {
@@ -20,6 +22,15 @@ export type Transaction = {
   recipientAccNumber: string;
   senderName: string;
   senderAccNumber: string;
+};
+
+export type Notification = {
+  id: string;
+  createdAt: string;
+  userId: string;
+  title: string;
+  body: string;
+  read: boolean;
 };
 
 export type LoginUserData = {

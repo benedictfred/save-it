@@ -1,8 +1,10 @@
 import { Outlet } from "react-router-dom";
 import Header from "../components/Header";
 import Sidebar from "../components/Sidebar";
+import { useTransactionStream } from "../hooks/useTransactionStream";
 
 export default function AppLayout() {
+  useTransactionStream();
   return (
     <section className="flex h-screen max-md:no-scrollbar">
       <Sidebar />

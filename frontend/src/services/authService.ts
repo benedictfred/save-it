@@ -1,15 +1,21 @@
 import { LoginFormData } from "../components/LoginForm";
+import { ResetPasswordData } from "../components/ResetPasswordForm";
 import { SignUpFormData } from "../components/SignUpForm";
 import { API_URL } from "../utils/constants";
 import { setPinData, User } from "../utils/types";
 
 interface LoginResponse {
   status: "success" | "fail" | "error";
-  message?: string;
+  message: string;
   user: Partial<User>;
 }
 
 interface SignUpResponse {
+  status: "success" | "fail" | "error";
+  message: string;
+}
+
+interface ApiResponse {
   status: "success" | "fail" | "error";
   message: string;
 }
@@ -45,12 +51,13 @@ export async function registerUser(
     body: JSON.stringify(payload),
   });
 
+  const data = await res.json();
+
   if (!res.ok) {
-    const errorData = await res.json();
-    throw new Error(errorData.message || "Registration failed");
+    throw new Error(data.message || "Registration failed");
   }
 
-  return res.json();
+  return data;
 }
 
 export async function logout() {
@@ -66,9 +73,48 @@ export async function logout() {
   return res.json();
 }
 
-export async function setPin(
-  payload: setPinData
-): Promise<{ status: "success" | "fail" | "error"; message: string }> {
+export async function forgotPassword(payload: {
+  email: string;
+}): Promise<ApiResponse> {
+  const res = await fetch(`${API_URL}/auth/forgot-password`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    throw new Error(data.message || "User with this email was not found");
+  }
+
+  return data;
+}
+
+export async function resetPassword(
+  payload: ResetPasswordData,
+  token: string
+): Promise<ApiResponse> {
+  const res = await fetch(`${API_URL}/auth/reset-password/${token}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    throw new Error(data.message || "This token is invalid");
+  }
+
+  return data;
+}
+
+export async function setPin(payload: setPinData): Promise<ApiResponse> {
   const response = await fetch(`${API_URL}/auth/pin`, {
     method: "PATCH",
     headers: {
@@ -78,11 +124,11 @@ export async function setPin(
     body: JSON.stringify(payload),
   });
 
+  const responseData = await response.json();
+
   if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.message || "Pin was not set");
+    throw new Error(responseData.message || "Pin was not set");
   }
 
-  const responseData = await response.json();
   return responseData;
 }

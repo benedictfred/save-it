@@ -1,6 +1,6 @@
 import { formatCurrency, truncateName } from "../utils/helpers";
 import { Transaction } from "../utils/types";
-import { FaRegEye, FaRegEyeSlash } from "../utils/icons";
+import { FaRegEye, FaRegEyeSlash, IoMdRefresh } from "../utils/icons";
 import Transactions from "./Transactions";
 import Loader from "./Loader";
 import { Link } from "react-router-dom";
@@ -9,7 +9,7 @@ import { useAuth } from "../contexts/AuthContext";
 
 export default function Home() {
   const [hideBalance, setHideBalance] = useState(true);
-  const { user } = useAuth();
+  const { user, fetchUser, isLoading } = useAuth();
 
   if (user === null) return <Loader />;
   return (
@@ -31,16 +31,20 @@ export default function Home() {
         </div>
         <div className="space-y-3 items-center justify-center max-sm:ml-auto">
           <p className="flex items-center justify-center space-x-3">
+            <IoMdRefresh
+              className={`cursor-pointer ${isLoading ? "animate-spin" : ""}`}
+              onClick={async () => await fetchUser()}
+            />
             <span className="text-sm">Available Balance</span>
-            <span>
+            <span className="cursor-pointer">
               {hideBalance ? (
-                <FaRegEyeSlash onClick={() => setHideBalance(false)} />
+                <FaRegEye onClick={() => setHideBalance(false)} />
               ) : (
-                <FaRegEye onClick={() => setHideBalance(true)} />
+                <FaRegEyeSlash onClick={() => setHideBalance(true)} />
               )}
             </span>
           </p>
-          <p className="text-2xl font-bold text-primary">
+          <p className="text-2xl font-bold text-primary text-center">
             {hideBalance
               ? "*********"
               : formatCurrency(user?.balance as number)}

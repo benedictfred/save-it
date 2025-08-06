@@ -1,6 +1,5 @@
 import { createContext, useContext, useState } from "react";
 import { TransferFormData } from "../components/TransferForm";
-import { useTransactionStream } from "../hooks/useTransactionStream";
 
 type AccountContextType = {
   transferData: TransferFormData;
@@ -10,7 +9,6 @@ type AccountContextType = {
 const AccountContext = createContext<AccountContextType | undefined>(undefined);
 
 function AccountProvider({ children }: { children: React.ReactNode }) {
-  useTransactionStream();
   const [transferData, setTransferData] = useState<TransferFormData>(
     {} as TransferFormData
   );
