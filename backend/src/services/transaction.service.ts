@@ -42,6 +42,7 @@ export async function transfer({
     if (sender.balance < amount)
       throw new AppError("Insufficient balance", 400);
 
+    // @ts-ignore
     const result = await prisma.$transaction(async (tx) => {
       // Deduct sender
       await tx.user.update({

@@ -1,5 +1,10 @@
 import AppError from "@/utils/appError";
-import { Prisma } from "@prisma/client";
+import {
+  PrismaClientKnownRequestError,
+  PrismaClientValidationError,
+  PrismaClientInitializationError,
+} from "@prisma/client/runtime/library";
+
 import { NextFunction, Request, Response } from "express";
 import { ZodError } from "zod";
 
@@ -64,11 +69,11 @@ const globalErrorHandler = (
   if (process.env.NODE_ENV === "development") {
     sendErrorDev(err, res);
   } else if (process.env.NODE_ENV === "production") {
-    if (err instanceof Prisma.PrismaClientKnownRequestError) {
+    if (err instanceof PrismaClientKnownRequestError) {
       if (err.code === "P2002") err = handleKnownErrors(err);
-    } else if (err instanceof Prisma.PrismaClientValidationError) {
+    } else if (err instanceof PrismaClientValidationError) {
       err = handleValidationErrors();
-    } else if (err instanceof Prisma.PrismaClientInitializationError) {
+    } else if (err instanceof PrismaClientInitializationError) {
       err = handleDbInitError();
     } else if (err instanceof ZodError) {
       err = handleZodErrors(err);
