@@ -20,9 +20,8 @@ export const getAllUsers = catchAsync(
 
 export const getDashboard = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const { currentUser, recentTransactions } = await userService.getDashboard(
-      req.user as User
-    );
+    const { currentUser, recentTransactions, recentNotifications } =
+      await userService.getDashboard(req.user as User);
 
     res.status(200).json({
       status: "success",
@@ -30,6 +29,7 @@ export const getDashboard = catchAsync(
         ...sanitizeUser(currentUser as User),
         hasPin: Boolean(currentUser?.pin),
         recentTransactions,
+        recentNotifications,
       },
     });
   }

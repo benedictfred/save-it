@@ -1,25 +1,41 @@
 import { prisma } from "@/prisma";
 import { sendEvent } from "@/utils/sse";
 
+interface NotificationClient {
+  notification: {
+    create: (args: {
+      data: {
+        userId: string;
+        title: string;
+        body: string;
+      };
+    }) => Promise<any>;
+  };
+}
+
 export async function create({
   userId,
   title,
   body,
+  transactionId,
+  prismaClient = prisma,
 }: {
   userId: string;
   title: string;
   body: string;
+  transactionId?: string;
+  prismaClient?: NotificationClient;
 }) {
-  const notification = await prisma.notification.create({
+  const notification = await prismaClient.notification.create({
     data: {
       userId,
       title,
       body,
+      ...(transactionId ? { transactionId } : {}),
     },
   });
 
   // Push to the user's SSE stream
-
   sendEvent(userId, {
     event: "notification",
     data: {

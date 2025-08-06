@@ -1,6 +1,7 @@
 import { prisma } from "@/prisma";
 import AppError from "@/utils/appError";
 import { sendEvent } from "@/utils/sse";
+import * as notificationService from "./notification.service";
 import bcrypt from "bcrypt";
 
 export async function transfer({
@@ -84,6 +85,23 @@ export async function transfer({
         },
       });
 
+      // Send notifications
+      await notificationService.create({
+        userId: sender.id,
+        title: "Transfer Successful",
+        body: `Your account was debited with ₦${amount} to ${recipient.name}.`,
+        transactionId: debitTx.id,
+        prismaClient: tx,
+      });
+
+      await notificationService.create({
+        userId: recipient.id,
+        title: "Credit Alert",
+        body: `Your account was credited with ₦${amount} from ${sender.name}.`,
+        transactionId: creditTx.id,
+        prismaClient: tx,
+      });
+
       // Send SSE event to sender
       sendEvent(sender.id, {
         event: "transaction",
@@ -106,6 +124,7 @@ export async function transfer({
 
     return result;
   } catch (err) {
+    console.log(err);
     // log a failed transaction for the sender
     const failedTx = await prisma.transaction.create({
       data: {
@@ -119,6 +138,17 @@ export async function transfer({
         recipientAccNumber: recipient.accountNumber,
         userId: sender.id,
       },
+    });
+
+    await notificationService.create({
+      userId: sender.id,
+      title: "Transfer Failed",
+      body: `The transfer of ₦${amount} to ${recipient.name} failed due to ${
+        err instanceof AppError
+          ? err.message
+          : "an unexpected issue. Please try again later."
+      }.`,
+      transactionId: failedTx.id,
     });
 
     // Send SSE event for failed transaction

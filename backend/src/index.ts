@@ -4,6 +4,7 @@ import morgan from "morgan";
 import userRouter from "@/routes/user.routes";
 import authRouter from "@/routes/auth.routes";
 import transactionRouter from "@/routes/transaction.routes";
+import notificationRouter from "@/routes/notification.route";
 import { prisma } from "./prisma";
 import AppError from "@/utils/appError";
 import globalErrorHandler from "@/middlewares/error.middleware";
@@ -33,7 +34,8 @@ if (process.env.NODE_ENV === "development") {
 
 app.use("/api/v2/auth", authRouter);
 app.use("/api/v2/users", userRouter);
-app.use("/api/v2/transaction", transactionRouter);
+app.use("/api/v2/transactions", transactionRouter);
+app.use("/api/v2/notifications", notificationRouter);
 
 app.get("/", async (req: Request, res: Response) => {
   const users = await prisma.user.create;

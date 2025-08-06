@@ -1,5 +1,6 @@
 import * as notificationService from "@/services/notification.service";
 import catchAsync from "@/utils/catchAsync";
+import { addClient } from "@/utils/sse";
 import { NextFunction, Request, Response } from "express";
 
 export const createNotification = catchAsync(
@@ -42,3 +43,7 @@ export const deleteNotification = catchAsync(
     res.status(204).json({ message: "Notification deleted." });
   }
 );
+
+export const notificationEventHandler = (req: Request, res: Response) => {
+  addClient(req.user?.id!, req, res);
+};

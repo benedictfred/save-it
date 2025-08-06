@@ -9,13 +9,20 @@ export const getDashboard = async (user: Partial<User>) => {
       pin: false,
     },
   });
+
   const recentTransactions = await prisma.transaction.findMany({
     where: { userId: user.id },
     orderBy: { date: "desc" },
     take: 5,
   });
 
-  return { currentUser, recentTransactions };
+  const recentNotifications = await prisma.notification.findMany({
+    where: { userId: user.id },
+    orderBy: { createdAt: "desc" },
+    take: 5,
+  });
+
+  return { currentUser, recentTransactions, recentNotifications };
 };
 
 export const resolveAccount = async (accountNumber: string) => {

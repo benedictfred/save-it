@@ -24,7 +24,7 @@ export function addClient(userId: string, req: Request, res: Response) {
   // Send a ping every 30s to keep the connection alive
   const keepAlive = setInterval(() => {
     res.write(":\n\n"); // SSE comment format to keep alive
-  }, 30000);
+  }, 15000);
 
   // Remove client on disconnect
   req.on("close", () => {

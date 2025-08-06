@@ -9,6 +9,8 @@ export const prisma = new PrismaClient({
       pin: true,
       createdAt: true,
       updatedAt: true,
+      resetToken: true,
+      resetTokenExpiry: true,
     },
     transaction: {
       userId: true,
@@ -22,7 +24,10 @@ export const prisma = new PrismaClient({
         args.data = {
           ...args.data,
           password: hashedPassword,
-          phoneNumber: `0${args.data.phoneNumber}`,
+          accountNumber:
+            args.data.phoneNumber.length > 10
+              ? args.data.phoneNumber.slice(1)
+              : args.data.phoneNumber,
         };
 
         return query(args);
