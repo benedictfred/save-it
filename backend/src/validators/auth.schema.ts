@@ -1,9 +1,9 @@
-import { z } from "zod";
+import z from "zod";
 
 export const signupSchema = z
   .object({
     name: z.string().min(1),
-    email: z.email("input a correct email format"),
+    email: z.string(),
     phoneNumber: z
       .string()
       .min(10, "Phone number must be at least 10 digits")
