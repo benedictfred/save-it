@@ -6,7 +6,7 @@
   "version": "1.0.0",
   "main": "index.ts",
   "scripts": {
-    "postinstall": "prisma generate",
+    "postinstall": "prisma generate --no-engine",
     "dev": "ts-node-dev --respawn -r tsconfig-paths/register api/index.ts",
     "type-check": "tsc --noEmit",
     "build": "tsc && tsc-alias",
@@ -17,6 +17,7 @@
   "license": "ISC",
   "dependencies": {
     "@prisma/client": "^6.13.0",
+    "@prisma/extension-accelerate": "^2.0.2",
     "@types/cookie-parser": "^1.4.9",
     "bcrypt": "^6.0.0",
     "cookie-parser": "^1.4.7",
