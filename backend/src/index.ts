@@ -50,4 +50,8 @@ app.use(/(.*)/, (req: Request, res: Response, next: NextFunction) => {
 
 app.use(globalErrorHandler);
 
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
+
 export default app;
