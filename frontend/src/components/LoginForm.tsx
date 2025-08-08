@@ -1,9 +1,8 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
-import { toast } from "react-toastify";
-import { useAccount } from "../contexts/AccountContext";
 import { FaRegEye, FaRegEyeSlash } from "../utils/icons";
 import { useState } from "react";
+import { useLogin } from "../hooks/useLogin";
 
 export type LoginFormData = {
   phoneNumber: string;
@@ -16,36 +15,10 @@ export default function LoginForm() {
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<LoginFormData>();
-  const navigate = useNavigate();
-  const API_URL = import.meta.env.VITE_BASE_URL;
+  const { mutate: login } = useLogin();
 
-  const { login, setUser } = useAccount();
-
-  const onSubmit = async (data: LoginFormData) => {
-    const { status, message, user } = await login(data);
-
-    if (status === "success" && user) {
-      toast.success(message);
-
-      const expiryTime = new Date().getTime() + 60 * 60 * 1000;
-      localStorage.setItem("authenticated", "true");
-      localStorage.setItem("user", JSON.stringify(user));
-      localStorage.setItem("expiry", expiryTime.toString());
-
-      // Fetch the full user data immediately after login
-      const fetchedUser = await fetch(`${API_URL}/user/${user.id}`)
-        .then((response) => response.json())
-        .catch((err) => {
-          toast.error(err.message);
-        });
-
-      if (fetchedUser) {
-        setUser(fetchedUser);
-        navigate("/home", { replace: true });
-      }
-    } else if (status === "error") {
-      toast.error(message);
-    }
+  const onSubmit = (data: LoginFormData) => {
+    login(data);
   };
 
   return (
@@ -92,9 +65,9 @@ export default function LoginForm() {
             onClick={() => setShowPassword(!showPassword)}
           >
             {showPassword ? (
-              <FaRegEye size={25} />
-            ) : (
               <FaRegEyeSlash size={25} />
+            ) : (
+              <FaRegEye size={25} />
             )}
           </span>
         </div>
@@ -115,7 +88,9 @@ export default function LoginForm() {
           Sign Up
         </Link>
       </div>
-      <p className="text-center text-blue-500">Forgot Password ?</p>
+      <Link to="/forgot-password" className="text-center text-blue-500">
+        Forgot Password ?
+      </Link>
     </form>
   );
 }

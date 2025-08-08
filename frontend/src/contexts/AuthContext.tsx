@@ -1,28 +1,24 @@
 import { createContext, useContext } from "react";
+import { User } from "../utils/types";
+import { useFetchUser } from "../hooks/useFetchUser";
+import { QueryObserverResult, RefetchOptions } from "@tanstack/react-query";
 
 type AuthContextType = {
-  checkAuthStatus: () => boolean;
+  user: Partial<User> | undefined;
+  isLoading: boolean;
+  error: Error | null;
+  fetchUser: (
+    options?: RefetchOptions
+  ) => Promise<QueryObserverResult<Partial<User>, Error>>;
 };
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const AuthContext = createContext<AuthContextType | null>(null);
 
 function AuthProvider({ children }: { children: React.ReactNode }) {
-  const checkAuthStatus = () => {
-    const expiry = localStorage.getItem("expiry");
-    const currentTime = new Date().getTime();
-
-    if (!expiry || currentTime > parseInt(expiry)) {
-      localStorage.removeItem("authenticated");
-      localStorage.removeItem("user");
-      localStorage.removeItem("expiry");
-      return false;
-    }
-
-    return localStorage.getItem("authenticated") === "true";
-  };
+  const { data: user, isLoading, error, refetch: fetchUser } = useFetchUser();
 
   return (
-    <AuthContext.Provider value={{ checkAuthStatus }}>
+    <AuthContext.Provider value={{ user, isLoading, error, fetchUser }}>
       {children}
     </AuthContext.Provider>
   );

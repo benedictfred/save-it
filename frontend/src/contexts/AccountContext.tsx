@@ -1,141 +1,23 @@
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useState,
-} from "react";
-import { SignUpFormData } from "../components/SignUpForm";
-import { CustomError, User } from "../utils/types";
-import { LoginFormData } from "../components/LoginForm";
-import { useLocation, useNavigate } from "react-router-dom";
+import { createContext, useContext, useState } from "react";
+import { TransferFormData } from "../components/TransferForm";
 
 type AccountContextType = {
-  setUser: (user: User) => void;
-  registerUser: (
-    data: SignUpFormData
-  ) => Promise<{ status: "success" | "error"; message: string }>;
-  login: (
-    data: LoginFormData
-  ) => Promise<{ status: "success" | "error"; message: string; user?: User }>;
-  user: User | null;
-  getUser: () => void;
-  isLoading: boolean;
-  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
+  transferData: TransferFormData;
+  setTransferData: React.Dispatch<React.SetStateAction<TransferFormData>>;
 };
 
 const AccountContext = createContext<AccountContextType | undefined>(undefined);
 
 function AccountProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate();
-  const { pathname } = useLocation();
-
-  // const API_URL = "http://localhost:8000";
-  const API_URL = import.meta.env.VITE_BASE_URL;
-
-  const getUser = useCallback(() => {
-    const localUser = JSON.parse(localStorage.getItem("user") as string);
-    const id = localUser?.id;
-
-    const authPages = ["/sign-in", "/sign-up"];
-
-    if (!id) {
-      if (!authPages.includes(pathname)) {
-        navigate("/sign-in");
-      }
-      return;
-    }
-
-    fetch(`${API_URL}/user/${id}`)
-      .then((response) => response.json())
-      .then((data) => setUser(data))
-      .catch((err) => {
-        console.error("Failed to fetch user data:", err);
-      });
-  }, [API_URL, navigate, pathname]);
-
-  useEffect(() => {
-    getUser();
-
-    const interval = setInterval(() => {
-      getUser();
-    }, 10000);
-
-    return () => clearInterval(interval);
-  }, [getUser]);
-
-  async function login(
-    data: LoginFormData
-  ): Promise<{ status: "success" | "error"; message: string; user?: User }> {
-    try {
-      setIsLoading(true);
-      const response = await fetch(`${API_URL}/auth/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message);
-      }
-
-      const responseData = await response.json();
-      return {
-        status: "success",
-        message: responseData.message,
-        user: responseData.user,
-      };
-    } catch (error) {
-      const customError = error as CustomError;
-      return { status: "error", message: customError.message };
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
-  async function registerUser(
-    data: SignUpFormData
-  ): Promise<{ status: "success" | "error"; message: string }> {
-    try {
-      setIsLoading(true);
-      const response = await fetch(`${API_URL}/auth/register`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message);
-      }
-
-      const responseData = await response.json();
-      return { status: "success", message: responseData.message };
-    } catch (error) {
-      const customError = error as CustomError;
-      return { status: "error", message: customError.message };
-    } finally {
-      setIsLoading(false);
-    }
-  }
+  const [transferData, setTransferData] = useState<TransferFormData>(
+    {} as TransferFormData
+  );
 
   return (
     <AccountContext.Provider
       value={{
-        registerUser,
-        login,
-        setUser,
-        user,
-        getUser,
-        isLoading,
-        setIsLoading,
+        transferData,
+        setTransferData,
       }}
     >
       {children}
@@ -145,7 +27,7 @@ function AccountProvider({ children }: { children: React.ReactNode }) {
 
 function useAccount() {
   const context = useContext(AccountContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error("useAccount must be used within a AccountProvider");
   }
   return context;

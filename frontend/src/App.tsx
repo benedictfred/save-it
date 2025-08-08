@@ -9,18 +9,20 @@ import Details from "./components/Details";
 import TransferForm from "./components/TransferForm";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
-import { useAccount } from "./contexts/AccountContext";
-import Loader from "./components/Loader";
 import History from "./components/History";
+import GlobalLoader from "./components/GlobalLoader";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 
 export default function App() {
-  const { isLoading } = useAccount();
   return (
     <>
       <Routes>
         <Route index element={<Navigate to="/sign-in" />} />
         <Route path="/sign-in" element={<SignIn />} />
         <Route path="/sign-up" element={<SignUp />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password/:token" element={<ResetPassword />} />
         <Route
           element={
             <ProtectedRoute>
@@ -37,7 +39,7 @@ export default function App() {
         </Route>
         <Route path="*" element={<NotFound />} />
       </Routes>
-      {isLoading && <Loader />}
+      <GlobalLoader />
       <ToastContainer aria-label="toast-message" className="max-md:w-[70%]" />
     </>
   );

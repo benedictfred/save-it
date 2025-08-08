@@ -1,17 +1,15 @@
 import { Navigate, useNavigate } from "react-router-dom";
 import { formatCurrency } from "../utils/helpers";
 import { useEffect, useState } from "react";
-import { toast } from "react-toastify";
-import { useTransfer } from "../contexts/TranferContext";
+import { useTransaction } from "../hooks/useTransaction";
 import { useAccount } from "../contexts/AccountContext";
 
 export default function Details() {
-  const { getUser, user } = useAccount();
-  const { transferData, transferAmount } = useTransfer();
+  const { transferData } = useAccount();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [userPin, setUserPin] = useState("");
   const navigate = useNavigate();
-  const { setPin } = useTransfer();
+  const { mutate: handleTransfer } = useTransaction();
 
   useEffect(() => {
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
@@ -26,32 +24,29 @@ export default function Details() {
     };
   }, []);
 
-  const handleConfirmTransaction = async () => {
-    const { status: pinStatus } = await setPin({
-      pin: userPin,
-      phoneNumber: user?.phoneNumber,
-    });
-    if (pinStatus === "success") {
-      const { message, status } = await transferAmount(transferData);
-      if (status === "success") {
-        toast.success(message);
-        getUser();
-        return navigate("/transfer");
+  const handleConfirmTransaction = () => {
+    handleTransfer(
+      {
+        ...transferData,
+        pin: userPin,
+        amount: Number(transferData.amount),
+      },
+      {
+        onSuccess: () => {
+          setUserPin("");
+          setIsModalOpen(false);
+          navigate("/transfer");
+        },
+        onError: () => {
+          setIsModalOpen(false);
+        },
       }
-
-      if (status === "error") {
-        toast.error(message);
-      }
-      setUserPin("");
-      setIsModalOpen(false);
-    } else {
-      toast.error("Invalid PIN");
-    }
+    );
   };
 
   if (
     !transferData.amount ||
-    !transferData.recipientNumber ||
+    !transferData.recipientAccNumber ||
     !transferData.recipientName
   ) {
     return <Navigate to="/transfer" />;
@@ -71,7 +66,7 @@ export default function Details() {
         </div>
         <div className="flex justify-between items-center px-2">
           <p>Account No</p>
-          <p className="text-gray-300">{transferData.recipientNumber}</p>
+          <p className="text-gray-300">{transferData.recipientAccNumber}</p>
         </div>
       </div>
       <button

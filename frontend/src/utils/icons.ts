@@ -1,4 +1,8 @@
-import { IoMdNotifications } from "react-icons/io";
+import {
+  IoMdNotifications,
+  IoMdCloseCircleOutline,
+  IoMdRefresh,
+} from "react-icons/io";
 import { FaHome, FaHistory, FaRegEye, FaRegEyeSlash } from "react-icons/fa";
 import { MdCallReceived, MdCallMade } from "react-icons/md";
 import { TbCurrencyNaira } from "react-icons/tb";
@@ -16,4 +20,6 @@ export {
   FaRegEye,
   FaRegEyeSlash,
   IoCopyOutline,
+  IoMdCloseCircleOutline,
+  IoMdRefresh,
 };

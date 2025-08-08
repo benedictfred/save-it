@@ -1,17 +1,15 @@
-import { useAccount } from "../contexts/AccountContext";
 import { formatCurrency, truncateName } from "../utils/helpers";
 import { Transaction } from "../utils/types";
-import { FaRegEye, FaRegEyeSlash } from "../utils/icons";
+import { FaRegEye, FaRegEyeSlash, IoMdRefresh } from "../utils/icons";
 import Transactions from "./Transactions";
 import Loader from "./Loader";
 import { Link } from "react-router-dom";
 import { useState } from "react";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function Home() {
   const [hideBalance, setHideBalance] = useState(true);
-
-  const { user } = useAccount();
-  const slicedTransaction = user?.transactions.slice(0, 5);
+  const { user, fetchUser, isLoading } = useAuth();
 
   if (user === null) return <Loader />;
   return (
@@ -33,16 +31,20 @@ export default function Home() {
         </div>
         <div className="space-y-3 items-center justify-center max-sm:ml-auto">
           <p className="flex items-center justify-center space-x-3">
+            <IoMdRefresh
+              className={`cursor-pointer ${isLoading ? "animate-spin" : ""}`}
+              onClick={async () => await fetchUser()}
+            />
             <span className="text-sm">Available Balance</span>
-            <span>
+            <span className="cursor-pointer">
               {hideBalance ? (
-                <FaRegEyeSlash onClick={() => setHideBalance(false)} />
+                <FaRegEye onClick={() => setHideBalance(false)} />
               ) : (
-                <FaRegEye onClick={() => setHideBalance(true)} />
+                <FaRegEyeSlash onClick={() => setHideBalance(true)} />
               )}
             </span>
           </p>
-          <p className="text-2xl font-bold text-primary">
+          <p className="text-2xl font-bold text-primary text-center">
             {hideBalance
               ? "*********"
               : formatCurrency(user?.balance as number)}
@@ -62,7 +64,7 @@ export default function Home() {
           </p>
         ) : (
           <div className="divide-y divide-gray-400 space-y-4">
-            {slicedTransaction?.map((transaction: Transaction) => (
+            {user?.recentTransactions?.map((transaction: Transaction) => (
               <Transactions transaction={transaction} key={transaction.id} />
             ))}
           </div>

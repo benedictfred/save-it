@@ -1,0 +1,64 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+}
+
+model User {
+  id                String         @id @default(uuid())
+  name              String
+  phoneNumber       String         @unique
+  accountNumber     String?         @unique
+  email             String         @unique
+  password          String
+  passwordChangedAt DateTime?
+  pin               String?
+  balance           Float          @default(2000)
+  resetToken        String?
+  resetTokenExpiry  DateTime?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  notifications     Notification[]
+  transactions      Transaction[]
+}
+
+model Transaction {
+  id                 String            @id @default(uuid())
+  amount             Float
+  date               DateTime
+  type               TransactionType
+  status             TransactionStatus
+  recipientName      String?
+  recipientAccNumber String?
+  senderName         String?
+  senderAccNumber    String?
+  userId             String
+  notification       Notification?
+  user               User              @relation(fields: [userId], references: [id])
+}
+
+model Notification {
+  id            String       @id @default(uuid())
+  userId        String
+  transactionId String?      @unique
+  title         String
+  body          String
+  read          Boolean      @default(false)
+  createdAt     DateTime     @default(now())
+  transaction   Transaction? @relation(fields: [transactionId], references: [id])
+  user          User         @relation(fields: [userId], references: [id])
+}
+
+enum TransactionType {
+  credit
+  debit
+}
+
+enum TransactionStatus {
+  success
+  pending
+  failed
+}

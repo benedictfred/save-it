@@ -1,24 +1,36 @@
 export type User = {
-  id: number;
+  id: string;
   name: string;
   email: string;
   phoneNumber: string;
-  pin: string;
-  password: string;
+  accountNumber: string;
   balance: number;
+  hasPin: boolean;
   transactions: Transaction[] | [];
+  notifications: Notification[] | [];
+  recentTransactions: Transaction[] | [];
+  recentNotifications: Notification[] | [];
 };
 
 export type Transaction = {
-  id: number;
+  id: string;
   amount: number;
   type: "credit" | "debit";
   date: string;
-  recipientNumber: string;
+  status: "success" | "failed" | "pending";
   recipientName: string;
-  senderNumber: string;
+  recipientAccNumber: string;
   senderName: string;
-  transaction?: Transaction;
+  senderAccNumber: string;
+};
+
+export type Notification = {
+  id: string;
+  createdAt: string;
+  userId: string;
+  title: string;
+  body: string;
+  read: boolean;
 };
 
 export type LoginUserData = {
@@ -29,16 +41,15 @@ export type LoginUserData = {
 export type CustomError = {
   code: string;
   message: string;
+  status: "success" | "fail" | "error";
 };
 
 export type TransferAmount = {
   amount: number;
-  recipientName: string;
-  recipientNumber: string;
-  senderNumber?: string;
+  recipientAccNumber: string;
+  pin: string;
 };
 
 export type setPinData = {
-  phoneNumber: string | undefined;
-  pin: string | undefined;
+  pin: string;
 };
