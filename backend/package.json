@@ -4,12 +4,13 @@
   },
   "name": "backend",
   "version": "1.0.0",
+  "main": "index.ts",
   "scripts": {
     "postinstall": "prisma generate",
-    "dev": "ts-node-dev --respawn -r tsconfig-paths/register src/index.ts",
+    "dev": "ts-node-dev --respawn -r tsconfig-paths/register api/index.ts",
     "type-check": "tsc --noEmit",
     "build": "tsc && tsc-alias",
-    "start": "node dist/index.js"
+    "start": "node api/index.ts"
   },
   "keywords": [],
   "author": "",
