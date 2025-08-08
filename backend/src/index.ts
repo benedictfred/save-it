@@ -1,11 +1,10 @@
 import express, { NextFunction, Request, Response } from "express";
-import dotenv from "dotenv";
 import morgan from "morgan";
+import dotenv from "dotenv";
 import userRouter from "@/routes/user.routes";
 import authRouter from "@/routes/auth.routes";
 import transactionRouter from "@/routes/transaction.routes";
 import notificationRouter from "@/routes/notification.route";
-import { prisma } from "./prisma";
 import AppError from "@/utils/appError";
 import globalErrorHandler from "@/middlewares/error.middleware";
 import helmet from "helmet";
@@ -15,7 +14,6 @@ import cookieParser from "cookie-parser";
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 8000;
 app.use(helmet());
 app.use(cookieParser());
 app.use(
@@ -32,15 +30,14 @@ if (process.env.NODE_ENV === "development") {
   app.use(morgan("combined"));
 }
 
+const PORT = process.env.PORT || 8000;
+
 app.use("/api/v2/auth", authRouter);
 app.use("/api/v2/users", userRouter);
 app.use("/api/v2/transactions", transactionRouter);
 app.use("/api/v2/notifications", notificationRouter);
 
-app.get("/", async (req: Request, res: Response) => {
-  const users = await prisma.user.create;
-  res.status(200).send(users);
-});
+app.get("/", (req, res) => res.send("Api is up and running"));
 
 app.use(/(.*)/, (req: Request, res: Response, next: NextFunction) => {
   next(
