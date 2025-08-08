@@ -197,7 +197,7 @@ export const verifyTokenAndUser = async (req: Request) => {
     }
   }
 
-  return sanitizeUser(user);
+  return user;
 };
 
 function generateToken(userId: string): string {

@@ -33,7 +33,7 @@ export const setPin = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const { pin } = pinSchema.parse(req.body);
 
-    await authService.setPin(req.user!.id!, pin);
+    await authService.setPin(req.user.id, pin);
 
     res.status(200).json({
       status: "success",

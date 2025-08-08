@@ -1,5 +1,3 @@
-import "module-alias/register";
-import "tsconfig-paths/register";
 import express, { NextFunction, Request, Response } from "express";
 import dotenv from "dotenv";
 import morgan from "morgan";
@@ -58,3 +56,5 @@ app.use(globalErrorHandler);
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
+export default app;
