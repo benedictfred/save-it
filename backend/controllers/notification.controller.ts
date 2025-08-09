@@ -1,6 +1,6 @@
-import * as notificationService from "@/services/notification.service";
-import catchAsync from "@/utils/catchAsync";
-import { addClient } from "@/utils/sse";
+import * as notificationService from "../services/notification.service";
+import catchAsync from "../utils/catchAsync";
+import { addClient } from "../utils/sse";
 import { NextFunction, Request, Response } from "express";
 
 export const createNotification = catchAsync(

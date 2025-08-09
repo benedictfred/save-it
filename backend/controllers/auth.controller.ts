@@ -1,9 +1,9 @@
 import { NextFunction, Request, Response } from "express";
-import catchAsync from "@/utils/catchAsync";
-import * as authService from "@/services/auth.service";
-import sendToken from "@/utils/sendToken";
-import { pinSchema } from "@/validators/user.schema";
-import clearToken from "@/utils/clearToken";
+import catchAsync from "../utils/catchAsync";
+import * as authService from "../services/auth.service";
+import sendToken from "../utils/sendToken";
+import { pinSchema } from "../validators/user.schema";
+import clearToken from "../utils/clearToken";
 
 export const signUp = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {

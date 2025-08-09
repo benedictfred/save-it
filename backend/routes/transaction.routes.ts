@@ -1,9 +1,9 @@
-import { protect } from "@/controllers/auth.controller";
+import { protect } from "../controllers/auth.controller";
 import {
   getHistory,
   transactionEventHandler,
   transfer,
-} from "@/controllers/transaction.controller";
+} from "../controllers/transaction.controller";
 import { Router } from "express";
 
 const router = Router();

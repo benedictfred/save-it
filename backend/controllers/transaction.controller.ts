@@ -1,8 +1,8 @@
-import catchAsync from "@/utils/catchAsync";
-import { TransferInput, transferSchema } from "@/validators/user.schema";
+import catchAsync from "../utils/catchAsync";
+import { TransferInput, transferSchema } from "../validators/user.schema";
 import { NextFunction, Request, Response } from "express";
-import * as transactionService from "@/services/transaction.service";
-import { addClient } from "@/utils/sse";
+import * as transactionService from "../services/transaction.service";
+import { addClient } from "../utils/sse";
 
 export const transfer = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {

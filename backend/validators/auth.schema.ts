@@ -3,7 +3,7 @@ import z from "zod";
 export const signupSchema = z
   .object({
     name: z.string().min(1),
-    email: z.string(),
+    email: z.email("Please put a valid email"),
     phoneNumber: z
       .string()
       .min(10, "Phone number must be at least 10 digits")

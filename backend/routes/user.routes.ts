@@ -1,9 +1,9 @@
-import { protect } from "@/controllers/auth.controller";
+import { protect } from "../controllers/auth.controller";
 import {
   getAllUsers,
   getDashboard,
   resolveAccount,
-} from "@/controllers/user.controller";
+} from "../controllers/user.controller";
 import { Router } from "express";
 
 const router = Router();

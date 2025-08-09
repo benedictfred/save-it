@@ -1,5 +1,5 @@
-import { prisma } from "@/prisma";
-import { sendEvent } from "@/utils/sse";
+import { prisma } from "../prisma/prisma";
+import { sendEvent } from "../utils/sse";
 
 interface NotificationClient {
   notification: {

@@ -1,9 +1,9 @@
-import { prisma } from "@/prisma";
-import AppError from "@/utils/appError";
+import { prisma } from "../prisma/prisma";
+import AppError from "../utils/appError";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
 import jwt, { JwtPayload } from "jsonwebtoken";
-import { sanitizeUser } from "@/utils/sanitize";
+import { sanitizeUser } from "../utils/sanitize";
 import {
   LoginInput,
   loginSchema,
@@ -11,10 +11,10 @@ import {
   resetPasswordSchema,
   SignupInput,
   signupSchema,
-} from "@/validators/auth.schema";
+} from "../validators/auth.schema";
 import { Request } from "express";
-import { sendEmail } from "@/utils/email";
-import { resetPasswordTemplate } from "@/templates/resetPasswordEmail";
+import { sendEmail } from "../utils/email";
+import { resetPasswordTemplate } from "../templates/resetPasswordEmail";
 
 interface CustomJwtPayload extends JwtPayload {
   id: string;

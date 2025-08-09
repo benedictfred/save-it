@@ -6,7 +6,7 @@ import {
   resetPassword,
   setPin,
   signUp,
-} from "@/controllers/auth.controller";
+} from "../controllers/auth.controller";
 import { Router } from "express";
 
 const router = Router();

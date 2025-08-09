@@ -1,9 +1,9 @@
-import { prisma } from "@/prisma";
-import catchAsync from "@/utils/catchAsync";
+import { prisma } from "../prisma/prisma";
+import catchAsync from "../utils/catchAsync";
 import { NextFunction, Request, Response } from "express";
-import * as userService from "@/services/user.service";
+import * as userService from "../services/user.service";
+import { sanitizeUser } from "../utils/sanitize";
 import { User } from "@prisma/client";
-import { sanitizeUser } from "@/utils/sanitize";
 
 export const getAllUsers = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {

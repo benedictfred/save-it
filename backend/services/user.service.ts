@@ -1,5 +1,5 @@
-import { prisma } from "@/prisma";
-import AppError from "@/utils/appError";
+import { prisma } from "../prisma/prisma";
+import AppError from "../utils/appError";
 import { User } from "@prisma/client";
 
 export const getDashboard = async (user: Partial<User>) => {

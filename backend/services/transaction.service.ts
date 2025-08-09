@@ -1,6 +1,6 @@
-import { prisma } from "@/prisma";
-import AppError from "@/utils/appError";
-import { sendEvent } from "@/utils/sse";
+import { prisma } from "../prisma/prisma";
+import AppError from "../utils/appError";
+import { sendEvent } from "../utils/sse";
 import * as notificationService from "./notification.service";
 import bcrypt from "bcrypt";
 
