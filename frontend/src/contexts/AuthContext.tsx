@@ -6,6 +6,7 @@ import { QueryObserverResult, RefetchOptions } from "@tanstack/react-query";
 type AuthContextType = {
   user: Partial<User> | undefined;
   isLoading: boolean;
+  isRefetching: boolean;
   error: Error | null;
   fetchUser: (
     options?: RefetchOptions
@@ -15,10 +16,18 @@ type AuthContextType = {
 const AuthContext = createContext<AuthContextType | null>(null);
 
 function AuthProvider({ children }: { children: React.ReactNode }) {
-  const { data: user, isLoading, error, refetch: fetchUser } = useFetchUser();
+  const {
+    data: user,
+    isLoading,
+    isRefetching,
+    error,
+    refetch: fetchUser,
+  } = useFetchUser();
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, error, fetchUser }}>
+    <AuthContext.Provider
+      value={{ user, isLoading, isRefetching, error, fetchUser }}
+    >
       {children}
     </AuthContext.Provider>
   );

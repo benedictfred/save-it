@@ -3,13 +3,14 @@ import { formatCurrency } from "../utils/helpers";
 import { useEffect, useState } from "react";
 import { useTransaction } from "../hooks/useTransaction";
 import { useAccount } from "../contexts/AccountContext";
+import Loader from "./Loader";
 
 export default function Details() {
   const { transferData } = useAccount();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [userPin, setUserPin] = useState("");
   const navigate = useNavigate();
-  const { mutate: handleTransfer } = useTransaction();
+  const { mutate: handleTransfer, isPending } = useTransaction();
 
   useEffect(() => {
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
@@ -106,6 +107,7 @@ export default function Details() {
           </div>
         </div>
       </div>
+      {isPending && <Loader />}
     </div>
   );
 }

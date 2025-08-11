@@ -1,9 +1,10 @@
 import { Transaction } from "../utils/types";
 import Transactions from "./Transactions";
 import { useTransactionHistory } from "../hooks/useTransactionHistory";
+import Loader from "./Loader";
 
 export default function History() {
-  const { data: transactions } = useTransactionHistory();
+  const { data: transactions, isLoading } = useTransactionHistory();
 
   return (
     <div className=" overflow-y-auto max-md:no-scrollbar pb-5">
@@ -19,6 +20,7 @@ export default function History() {
           ))}
         </div>
       )}
+      {isLoading && <Loader />}
     </div>
   );
 }

@@ -1,41 +1,30 @@
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { API_URL } from "../utils/constants";
 
 export function useTransactionStream() {
   const queryClient = useQueryClient();
-  const reconnectTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     let eventSource: EventSource | null = null;
 
-    const connect = () => {
-      eventSource = new EventSource(`${API_URL}/transactions/stream`, {
-        withCredentials: true,
-      });
+    eventSource = new EventSource(`${API_URL}/transactions/stream`, {
+      withCredentials: true,
+    });
 
-      eventSource.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        if (data.event === "transaction" || data.event === "notification") {
-          queryClient.invalidateQueries({ queryKey: ["user"] });
-        }
-      };
-
-      eventSource.onerror = () => {
-        console.warn("Transaction stream closed due to error, reconnecting...");
-        eventSource?.close();
-
-        reconnectTimeout.current = setTimeout(connect, 3000);
-      };
+    eventSource.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      if (data.event === "transaction" || data.event === "notification") {
+        queryClient.invalidateQueries({ queryKey: ["user"] });
+      }
     };
 
-    connect();
+    eventSource.onerror = () => {
+      console.warn("Transaction stream closed due to error, reconnecting...");
+    };
 
     return () => {
       eventSource?.close();
-      if (reconnectTimeout.current) {
-        clearTimeout(reconnectTimeout.current);
-      }
     };
   }, [queryClient]);
 }

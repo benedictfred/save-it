@@ -6,6 +6,7 @@ import { useRecipientName } from "../hooks/useRecipientName";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAccount } from "../contexts/AccountContext";
 import { useAuth } from "../contexts/AuthContext";
+import Loader from "./Loader";
 
 export type TransferFormData = {
   amount: number;
@@ -28,7 +29,11 @@ export default function TransferForm() {
   const recipientAccNumber = watch("recipientAccNumber");
   const queryClient = useQueryClient();
   const { user } = useAuth();
-  const { data: recipientName, error } = useRecipientName(
+  const {
+    data: recipientName,
+    error,
+    isLoading,
+  } = useRecipientName(
     recipientAccNumber,
     recipientAccNumber?.trim().length === 10
   );
@@ -119,6 +124,7 @@ export default function TransferForm() {
           Continue
         </button>
       </form>
+      {isLoading && <Loader />}
     </>
   );
 }
