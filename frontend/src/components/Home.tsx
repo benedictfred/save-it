@@ -9,7 +9,7 @@ import { useAuth } from "../contexts/AuthContext";
 
 export default function Home() {
   const [hideBalance, setHideBalance] = useState(true);
-  const { user, fetchUser, isLoading, isRefetching } = useAuth();
+  const { user, fetchUser, isLoading } = useAuth();
 
   if (user === null) return <Loader />;
   return (
@@ -70,7 +70,7 @@ export default function Home() {
           </div>
         )}
       </div>
-      {isLoading || (isRefetching && <Loader />)}
+      {isLoading && <Loader />}
     </section>
   );
 }

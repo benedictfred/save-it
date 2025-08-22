@@ -1,30 +1,32 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { API_URL } from "../utils/constants";
+import { useAbly } from "./useAbly";
+import { Message } from "ably";
+import Ably from "ably";
 
 export function useTransactionStream() {
   const queryClient = useQueryClient();
+  const { ably, isConnected, userId } = useAbly();
+  const channelRef = useRef<Ably.RealtimeChannel | null>(null);
 
   useEffect(() => {
-    let eventSource: EventSource | null = null;
+    if (!ably || !isConnected || !userId) return;
 
-    eventSource = new EventSource(`${API_URL}/transactions/stream`, {
-      withCredentials: true,
-    });
+    // Get channel
+    channelRef.current = ably.channels.get(`user-${userId}`);
 
-    eventSource.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      if (data.event === "transaction" || data.event === "notification") {
-        queryClient.invalidateQueries({ queryKey: ["user"] });
-      }
+    // Subscribe to messages
+    const messageHandler = (msg: Message) => {
+      queryClient.invalidateQueries({ queryKey: ["user"] });
+      console.log("Got event:", msg.data);
     };
 
-    eventSource.onerror = () => {
-      console.warn("Transaction stream closed due to error, reconnecting...");
-    };
+    channelRef.current.subscribe("message", messageHandler);
 
     return () => {
-      eventSource?.close();
+      if (channelRef.current) {
+        channelRef.current.unsubscribe("message", messageHandler);
+      }
     };
-  }, [queryClient]);
+  }, [ably, isConnected, userId, queryClient]);
 }
