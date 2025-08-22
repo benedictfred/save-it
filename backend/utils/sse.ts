@@ -1,13 +1,14 @@
-// sse.ts
 import type { Request, Response } from "express";
 
-type Client = { userId: string; res: Response };
+type Client = {
+  userId: string;
+  res: Response;
+};
 const clients: Client[] = [];
 
 export function addClient(userId: string, req: Request, res: Response) {
   const origin = req.headers.origin;
 
-  // CORS for SSE (exact origin + credentials)
   if (
     origin === "https://save-it-rho.vercel.app" ||
     origin?.startsWith("http://localhost:")

@@ -60,7 +60,6 @@ const globalErrorHandler = (
   err.status = err.status || "error";
 
   console.log(err);
-  console.log(process.env.DATABASE_URL);
 
   if (process.env.NODE_ENV === "development") {
     sendErrorDev(err, res);

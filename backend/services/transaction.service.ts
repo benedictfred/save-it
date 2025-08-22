@@ -1,6 +1,6 @@
 import { prisma } from "../prisma/prisma";
+import { sendEvent } from "../utils/ably";
 import AppError from "../utils/appError";
-import { sendEvent } from "../utils/sse";
 import * as notificationService from "./notification.service";
 import bcrypt from "bcrypt";
 
@@ -42,7 +42,6 @@ export async function transfer({
     if (sender.balance < amount)
       throw new AppError("Insufficient balance", 400);
 
-    // @ts-ignore
     const result = await prisma.$transaction(async (tx) => {
       // Deduct sender
       await tx.user.update({
@@ -86,44 +85,44 @@ export async function transfer({
         },
       });
 
-      // Send notifications
-      await notificationService.create({
+      return { debitTx, creditTx };
+    });
+
+    // Send Notifications
+    await Promise.all([
+      notificationService.create({
         userId: sender.id,
         title: "Transfer Successful",
         body: `Your account was debited with ₦${amount} to ${recipient.name}.`,
-        transactionId: debitTx.id,
-        prismaClient: tx,
-      });
-
-      await notificationService.create({
+        transactionId: result.debitTx.id,
+      }),
+      notificationService.create({
         userId: recipient.id,
         title: "Credit Alert",
         body: `Your account was credited with ₦${amount} from ${sender.name}.`,
-        transactionId: creditTx.id,
-        prismaClient: tx,
-      });
+        transactionId: result.creditTx.id,
+      }),
+    ]);
 
-      // Send SSE event to sender
-      sendEvent(sender.id, {
-        event: "transaction",
-        data: {
-          type: "debit",
-          transaction: debitTx,
-        },
-      });
-
-      // Send SSE event to recipient
-      sendEvent(recipient.id, {
-        event: "transaction",
-        data: {
-          type: "credit",
-          transaction: creditTx,
-        },
-      });
-      return debitTx;
+    // Send SSE event to sender
+    sendEvent(sender.id, {
+      event: "transaction",
+      data: {
+        type: "debit",
+        transaction: result.debitTx,
+      },
     });
 
-    return result;
+    // Send SSE event to recipient
+    sendEvent(recipient.id, {
+      event: "transaction",
+      data: {
+        type: "credit",
+        transaction: result.creditTx,
+      },
+    });
+
+    return result.debitTx;
   } catch (err) {
     console.log(err);
     // log a failed transaction for the sender

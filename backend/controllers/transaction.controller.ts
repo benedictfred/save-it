@@ -2,7 +2,7 @@ import catchAsync from "../utils/catchAsync";
 import { TransferInput, transferSchema } from "../validators/user.schema";
 import { NextFunction, Request, Response } from "express";
 import * as transactionService from "../services/transaction.service";
-import { addClient } from "../utils/sse";
+import { ably } from "../utils/ably";
 
 export const transfer = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -35,6 +35,16 @@ export const getHistory = catchAsync(
   }
 );
 
-export const transactionEventHandler = (req: Request, res: Response) => {
-  addClient(req.user?.id!, req, res);
-};
+export const ablyEventHandler = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const capability = {} as any;
+
+    capability[`user-${req.user.id}`] = ["subscribe"];
+    const tokenRequest = await ably.auth.createTokenRequest({
+      clientId: req.user.id,
+      capability,
+      ttl: 60 * 60 * 1000,
+    });
+    res.status(200).json(tokenRequest);
+  }
+);
