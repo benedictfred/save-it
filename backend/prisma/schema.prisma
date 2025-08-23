@@ -17,12 +17,14 @@ model User {
   passwordChangedAt DateTime?
   pin               String?
   balance           Float          @default(2000)
-  resetToken        String?
-  resetTokenExpiry  DateTime?
+  emailVerified     Boolean       @default(false)
+  phoneVerified     Boolean       @default(false)
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
+  status            AccountStatus  @default(pending)
   notifications     Notification[]
   transactions      Transaction[]
+  verificationTokens VerificationToken[]
 }
 
 model Transaction {
@@ -37,7 +39,7 @@ model Transaction {
   senderAccNumber    String?
   userId             String
   notification       Notification?
-  user               User              @relation(fields: [userId], references: [id])
+  user               User              @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Notification {
@@ -49,7 +51,18 @@ model Notification {
   read          Boolean      @default(false)
   createdAt     DateTime     @default(now())
   transaction   Transaction? @relation(fields: [transactionId], references: [id])
-  user          User         @relation(fields: [userId], references: [id])
+  user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  id        String           @id @default(uuid())
+  userId    String
+  token     String           @unique
+  type      VerificationType  
+  expiresAt DateTime
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, type])
 }
 
 enum TransactionType {
@@ -61,4 +74,19 @@ enum TransactionStatus {
   success
   pending
   failed
+}
+
+enum AccountStatus {
+  pending
+  email_verified
+  phone_verified
+  active
+  suspended
+}
+
+enum VerificationType {
+  email
+  phone
+  password_reset
+  two_factor
 }

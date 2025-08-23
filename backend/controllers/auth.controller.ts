@@ -1,18 +1,18 @@
 import { NextFunction, Request, Response } from "express";
 import catchAsync from "../utils/catchAsync";
 import * as authService from "../services/auth.service";
-import sendToken from "../utils/sendToken";
 import { pinSchema } from "../validators/user.schema";
-import clearToken from "../utils/clearToken";
+import { clearCookie, sendCookie } from "../utils/cookie";
 
 export const signUp = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const { user, token } = await authService.signUp(req.body);
+    const { user, token, message } = await authService.signUp(req.body);
 
-    sendToken(res, token);
+    sendCookie(res, token);
     res.status(201).json({
       status: "success",
       user,
+      message,
     });
   }
 );
@@ -21,7 +21,7 @@ export const login = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const { user, token } = await authService.login(req.body);
 
-    sendToken(res, token);
+    sendCookie(res, token);
     res.status(200).json({
       status: "success",
       user,
@@ -68,16 +68,55 @@ export const resetPassword = catchAsync(
   }
 );
 
-export const logout = (req: Request, res: Response) => {
-  clearToken(res);
-  res.status(200).json({ message: "Logged out successfully" });
-};
-
-export const protect = catchAsync(
+export const verifyEmail = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const user = await authService.verifyTokenAndUser(req);
+    const { token } = req.params;
 
-    req.user = user;
-    next();
+    const { message } = await authService.verifyEmail(token);
+
+    res.status(200).json({
+      status: "success",
+      message,
+    });
   }
 );
+
+export const verifyPhone = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { otp } = req.body;
+
+    const { message } = await authService.verifyPhoneOTP(req.user.id, otp);
+
+    res.status(200).json({
+      status: "success",
+      message,
+    });
+  }
+);
+
+export const resendVerificationEmail = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { message } = await authService.sendVerificationEmail(req.user.id);
+
+    res.status(200).json({
+      status: "success",
+      message,
+    });
+  }
+);
+
+export const resendOtp = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { message } = await authService.sendPhoneVerificationOTP(req.user.id);
+
+    res.status(200).json({
+      status: "success",
+      message,
+    });
+  }
+);
+
+export const logout = (req: Request, res: Response) => {
+  clearCookie(res);
+  res.status(200).json({ message: "Logged out successfully" });
+};

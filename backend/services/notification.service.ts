@@ -1,18 +1,6 @@
 import { prisma } from "../prisma/prisma";
 import { sendEvent } from "../utils/ably";
 
-// interface NotificationClient {
-//   notification: {
-//     create: (args: {
-//       data: {
-//         userId: string;
-//         title: string;
-//         body: string;
-//       };
-//     }) => Promise<any>;
-//   };
-// }
-
 export async function create({
   userId,
   title,

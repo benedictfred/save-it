@@ -1,9 +1,9 @@
-import { protect } from "../controllers/auth.controller";
 import {
   getUserNotifications,
   notificationEventHandler,
 } from "../controllers/notification.controller";
 import { Router } from "express";
+import { protect } from "../middlewares/auth.middleware";
 
 const router = Router();
 
