@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
 import { useResetPassword } from "../hooks/useResetPassword";
+import Loader from "./Loader";
 
 export interface ResetPasswordData {
   password: string;
@@ -11,7 +12,7 @@ export interface ResetPasswordData {
 export default function ResetPasswordForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const { mutate: handleResetPassword } = useResetPassword();
+  const { mutate: handleResetPassword, isPending } = useResetPassword();
   const {
     handleSubmit,
     register,
@@ -44,7 +45,13 @@ export default function ResetPasswordForm() {
               id="password"
               className="p-3 w-full border rounded-md outline-none text-black"
               placeholder="Enter your password"
-              {...register("password", { required: "Password is required" })}
+              {...register("password", {
+                required: "Password is required",
+                minLength: {
+                  value: 6,
+                  message: "Password must be at least 6 characters",
+                },
+              })}
             />
             <span
               className="absolute text-black right-3 top-3 cursor-pointer"
@@ -98,6 +105,7 @@ export default function ResetPasswordForm() {
           Reset Password
         </button>
       </form>
+      {isPending && <Loader />}
     </div>
   );
 }

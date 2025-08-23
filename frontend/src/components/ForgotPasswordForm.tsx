@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import EmailSentModal from "./EmailSentModal";
 import { useForgotPassword } from "../hooks/useForgotPassword";
+import Loader from "./Loader";
 
 interface ForgotPasswordData {
   email: string;
@@ -10,7 +11,7 @@ interface ForgotPasswordData {
 export default function ForgotPasswordForm() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [timer, setTimer] = useState(0);
-  const { mutate: handleForgotPassword } = useForgotPassword();
+  const { mutate: handleForgotPassword, isPending } = useForgotPassword();
   const {
     handleSubmit,
     register,
@@ -67,6 +68,7 @@ export default function ForgotPasswordForm() {
           Send Reset Link
         </button>
       </form>
+      {isPending && <Loader />}
       {isModalOpen && <EmailSentModal setIsModalOpen={setIsModalOpen} />}
     </div>
   );
