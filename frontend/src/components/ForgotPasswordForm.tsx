@@ -1,8 +1,10 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import EmailSentModal from "./EmailSentModal";
 import { useForgotPassword } from "../hooks/useForgotPassword";
 import Loader from "./Loader";
+import { useTimer } from "../hooks/useTimer";
+import { formatCountdown } from "../utils/helpers";
 
 interface ForgotPasswordData {
   email: string;
@@ -10,7 +12,7 @@ interface ForgotPasswordData {
 
 export default function ForgotPasswordForm() {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [timer, setTimer] = useState(0);
+  const { timeLeft, setTimeLeft } = useTimer(60);
   const { mutate: handleForgotPassword, isPending } = useForgotPassword();
   const {
     handleSubmit,
@@ -18,27 +20,11 @@ export default function ForgotPasswordForm() {
     formState: { errors, isSubmitting },
   } = useForm<ForgotPasswordData>();
 
-  useEffect(() => {
-    if (timer === 0) return;
-    const interval = setInterval(() => {
-      setTimer((prev) => prev - 1);
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [timer]);
-
-  const formatTime = (secs: number) => {
-    const minutes = Math.floor(secs / 60)
-      .toString()
-      .padStart(2, "0");
-    const seconds = (secs % 60).toString().padStart(2, "0");
-    return `${minutes}:${seconds}`;
-  };
-
   const onSubmit = async (data: ForgotPasswordData) => {
     handleForgotPassword(data, {
       onSuccess: () => {
         setIsModalOpen(true);
-        setTimer(60);
+        setTimeLeft(60);
       },
     });
   };
@@ -54,16 +40,16 @@ export default function ForgotPasswordForm() {
           {...register("email", { required: "Email address is required" })}
         />
         {errors.email && <p className="text-red-500">{errors.email.message}</p>}
-        {timer > 0 && (
+        {timeLeft > 0 && (
           <div className="mt-4 text-right text-gray-700">
             Reset link expires in:{" "}
-            <span className="font-bold">{formatTime(timer)}</span>
+            <span className="font-bold">{formatCountdown(timeLeft)}</span>
           </div>
         )}
         <button
           type="submit"
           className="p-3 mt-3 bg-primary rounded-md w-full text-black disabled:bg-gray-500"
-          disabled={isSubmitting || timer > 0}
+          disabled={isSubmitting || timeLeft > 0}
         >
           Send Reset Link
         </button>

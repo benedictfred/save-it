@@ -132,3 +132,76 @@ export async function setPin(payload: setPinData): Promise<ApiResponse> {
 
   return responseData;
 }
+
+export async function verifyEmail(token: string): Promise<ApiResponse> {
+  const response = await fetch(`${API_URL}/auth/verify-email/${token}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+  });
+
+  const responseData = await response.json();
+
+  if (!response.ok) {
+    throw new Error(responseData.message || "Email verification failed");
+  }
+
+  return responseData;
+}
+
+export async function verifyPhone(otp: string): Promise<ApiResponse> {
+  const response = await fetch(`${API_URL}/auth/verify-phone`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ otp }),
+    credentials: "include",
+  });
+
+  const responseData = await response.json();
+
+  if (!response.ok) {
+    throw new Error(responseData.message || "Phone verification failed");
+  }
+
+  return responseData;
+}
+
+export async function resendVerificationEmail(): Promise<ApiResponse> {
+  const response = await fetch(`${API_URL}/auth/resend-verification-email`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+  });
+
+  const responseData = await response.json();
+
+  if (!response.ok) {
+    throw new Error(responseData.message || "Email was not sent");
+  }
+
+  return responseData;
+}
+
+export async function resendOtp(): Promise<ApiResponse> {
+  const response = await fetch(`${API_URL}/auth/resend-otp`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+  });
+
+  const responseData = await response.json();
+
+  if (!response.ok) {
+    throw new Error(responseData.message || "OTP was not sent");
+  }
+
+  return responseData;
+}

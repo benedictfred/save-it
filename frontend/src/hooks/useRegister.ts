@@ -9,10 +9,10 @@ export function useRegister() {
 
   return useMutation({
     mutationFn: registerUser,
-    onSuccess: async () => {
+    onSuccess: async (data) => {
       await queryClient.invalidateQueries({ queryKey: ["user"] });
-      toast.success("Registration Successful");
-      navigate("/home", { replace: true });
+      toast.success(data.message || "Registration Successful");
+      navigate("/resend-email", { replace: true });
     },
     onError: (err) => {
       toast.error(err.message || "Registration failed");

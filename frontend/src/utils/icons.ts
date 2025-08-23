@@ -3,7 +3,13 @@ import {
   IoMdCloseCircleOutline,
   IoMdRefresh,
 } from "react-icons/io";
-import { FaHome, FaHistory, FaRegEye, FaRegEyeSlash } from "react-icons/fa";
+import {
+  FaHome,
+  FaHistory,
+  FaRegEye,
+  FaRegEyeSlash,
+  FaArrowLeft,
+} from "react-icons/fa";
 import { MdCallReceived, MdCallMade } from "react-icons/md";
 import { TbCurrencyNaira } from "react-icons/tb";
 import { LuLogOut } from "react-icons/lu";
@@ -22,4 +28,5 @@ export {
   IoCopyOutline,
   IoMdCloseCircleOutline,
   IoMdRefresh,
+  FaArrowLeft,
 };

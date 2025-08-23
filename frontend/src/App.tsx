@@ -12,6 +12,9 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import History from "./components/History";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
+import ResendEmailPage from "./pages/ResendEmail";
+import VerifyEmail from "./pages/VerifyEmail";
+import VerifyOtp from "./pages/VerifyOtp";
 
 export default function App() {
   return (
@@ -22,6 +25,9 @@ export default function App() {
         <Route path="/sign-up" element={<SignUp />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
+        <Route path="/resend-email" element={<ResendEmailPage />} />
+        <Route path="/verify-email/:token" element={<VerifyEmail />} />
+        <Route path="/verify-phone" element={<VerifyOtp />} />
         <Route
           element={
             <ProtectedRoute>

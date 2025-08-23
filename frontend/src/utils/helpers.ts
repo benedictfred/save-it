@@ -29,3 +29,11 @@ export function truncateName(name: string) {
 
   return name;
 }
+
+export const formatCountdown = (secs: number) => {
+  const minutes = Math.floor(secs / 60)
+    .toString()
+    .padStart(2, "0");
+  const seconds = (secs % 60).toString().padStart(2, "0");
+  return `${minutes}:${seconds}`;
+};
