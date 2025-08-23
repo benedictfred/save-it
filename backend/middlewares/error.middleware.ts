@@ -5,7 +5,8 @@ import { ZodError } from "zod";
 
 const handleKnownErrors = (err: any) => {
   const target = (err.meta?.target as string[])?.join(", ");
-  const message = `Duplicate value for field(s): ${target}`;
+  const formatTarget = target.replace(/([A-Z]+)/g, " $1").toLowerCase();
+  const message = `A user with this ${formatTarget} already exists.`;
   return new AppError(message, 400);
 };
 
