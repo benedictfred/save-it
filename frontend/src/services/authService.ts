@@ -44,7 +44,7 @@ export async function loginUser(
 export async function registerUser(
   payload: SignUpFormData
 ): Promise<SignUpResponse> {
-  const res = await fetch(`${API_URL}/auth/register`, {
+  const res = await fetch(`${API_URL}/auth/signup`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",

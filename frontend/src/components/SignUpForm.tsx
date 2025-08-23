@@ -9,13 +9,16 @@ export type SignUpFormData = {
   email: string;
   phoneNumber: string;
   password: string;
+  confirmPassword: string;
 };
 
 export default function SignUpForm() {
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<SignUpFormData>();
 
@@ -66,15 +69,16 @@ export default function SignUpForm() {
           <input
             type="tel"
             id="number"
-            maxLength={10}
             className="py-3 pl-20 border rounded-md w-full outline-none text-black"
             placeholder="Enter your phone number"
             {...register("phoneNumber", {
               required: "Phone number is required",
-              minLength: {
-                value: 10,
-                message: "The phone number must be exactly 10 digits",
+              pattern: {
+                value: /^(0\d{10}|\d{10})$/,
+                message:
+                  "Phone number must be 10 digits or 11 digits with leading 0",
               },
+              setValueAs: (value: string) => value.replace(/^0/, ""),
             })}
           />
         </div>
@@ -92,7 +96,13 @@ export default function SignUpForm() {
             id="password"
             className="p-3 w-full border rounded-md outline-none text-black"
             placeholder="Enter your password"
-            {...register("password", { required: "Password is required" })}
+            {...register("password", {
+              required: "Password is required",
+              minLength: {
+                value: 6,
+                message: "Password must be at least 6 characters",
+              },
+            })}
           />
           <span
             className="absolute text-black right-3 top-3 cursor-pointer"
@@ -107,6 +117,37 @@ export default function SignUpForm() {
         </div>
         {errors.password && (
           <p className="text-red-500">{errors.password.message}</p>
+        )}
+      </div>
+      <div className="flex flex-col gap-y-2">
+        <label htmlFor="confirmPassword" className="text-left ">
+          Confirm Password
+        </label>
+        <div className="relative">
+          <input
+            type={showConfirmPassword ? "text" : "password"}
+            id="confirmPassword"
+            className="p-3 w-full border rounded-md outline-none text-black"
+            placeholder="Enter your password again"
+            {...register("confirmPassword", {
+              required: "Confirm Password is required",
+              validate: (value) =>
+                value === watch("password") || "Passwords do not match",
+            })}
+          />
+          <span
+            className="absolute text-black right-3 top-3 cursor-pointer"
+            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+          >
+            {showConfirmPassword ? (
+              <FaRegEye size={25} />
+            ) : (
+              <FaRegEyeSlash size={25} />
+            )}
+          </span>
+        </div>
+        {errors.confirmPassword && (
+          <p className="text-red-500">{errors.confirmPassword.message}</p>
         )}
       </div>
 
