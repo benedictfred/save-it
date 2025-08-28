@@ -20,7 +20,7 @@ export function useAbly() {
       authHeaders: {
         "Content-Type": "application/json",
       },
-      authCallback: async (tokenParams, callback) => {
+      authCallback: async (_tokenParams, callback) => {
         try {
           const response = await fetch(`${API_URL}/transactions/stream`, {
             method: "GET",

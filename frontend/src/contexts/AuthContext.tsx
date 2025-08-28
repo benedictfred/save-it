@@ -1,4 +1,4 @@
-import { createContext, useContext } from "react";
+import { createContext, useCallback, useContext } from "react";
 import { User } from "../utils/types";
 import { useFetchUser } from "../hooks/useFetchUser";
 import { QueryObserverResult, RefetchOptions } from "@tanstack/react-query";
@@ -21,8 +21,15 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
     isLoading,
     isRefetching,
     error,
-    refetch: fetchUser,
+    refetch,
   } = useFetchUser();
+
+  const fetchUser = useCallback(
+    (options?: RefetchOptions) => {
+      return refetch(options);
+    },
+    [refetch]
+  );
 
   return (
     <AuthContext.Provider

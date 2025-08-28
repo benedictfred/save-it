@@ -1,23 +1,51 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useTimer } from "../hooks/useTimer";
 import { IoMdRefresh, FaArrowLeft } from "../utils/icons";
 import { useVerifyOtp } from "../hooks/useVerifyOtp";
 import { resendOtp } from "../services/authService";
 import { toast } from "react-toastify";
 import Loader from "./Loader";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function OtpForm() {
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [error, setError] = useState("");
-  const { timeLeft, setTimeLeft } = useTimer(60);
+  const { timeLeft, setTimeLeft } = useTimer(0);
   const { mutate: verifyOtp, isPending } = useVerifyOtp();
   const [isLoading, setIsLoading] = useState(false);
+  const { user } = useAuth();
   const inputRefs = useRef<Array<HTMLInputElement | null>>([]);
+  const navigate = useNavigate();
 
-  // Initialize refs
+  const sendOtp = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const { message } = await resendOtp();
+      toast.success(message || "OTP resent successfully");
+      setTimeLeft(60);
+    } catch (error) {
+      toast.error((error as Error).message || "Failed to resend OTP");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [setIsLoading, setTimeLeft]);
+
+  // Runs immediately on mount
   useEffect(() => {
-    inputRefs.current = inputRefs.current.slice(0, 6);
-  }, []);
+    const initialize = async () => {
+      if (user?.phoneVerified) {
+        navigate("/home", { replace: true });
+        return;
+      }
+
+      await sendOtp();
+
+      inputRefs.current = inputRefs.current.slice(0, 6);
+    };
+
+    initialize();
+  }, [user, navigate, sendOtp]);
 
   const handleChange = (index: number, value: string) => {
     // Only allow digits
@@ -110,16 +138,7 @@ export default function OtpForm() {
     setOtp(["", "", "", "", "", ""]);
     setError("");
 
-    setIsLoading(true);
-    try {
-      const { message } = await resendOtp();
-      toast.success(message || "OTP resent successfully");
-      setTimeLeft(60);
-    } catch (error) {
-      toast.error((error as Error).message || "Failed to resend OTP");
-    } finally {
-      setIsLoading(false);
-    }
+    await sendOtp();
   };
 
   return (
@@ -134,7 +153,8 @@ export default function OtpForm() {
             Enter the 6-digit code sent to your phone number
           </p>
           <p className="text-sm font-medium text-gray-50 mt-2">
-            +234 *** *** 123
+            {user?.phoneNumber?.slice(0, 4)} *** ***
+            {user?.phoneNumber?.slice(-3)}
           </p>
         </div>
 
@@ -153,10 +173,10 @@ export default function OtpForm() {
                 onPaste={handlePaste}
                 className={`w-12 h-12 text-center text-lg font-semibold border-2 rounded-lg focus:outline-none transition-colors ${
                   digit
-                    ? "border-[#cbfe33] bg-[#cbfe33]/10"
+                    ? "border-primary bg-primary/10"
                     : error
                     ? "border-red-300 focus:border-red-500"
-                    : "border-gray-300 focus:border-[#cbfe33]"
+                    : "border-gray-300 focus:border-primary"
                 }`}
               />
             ))}
@@ -171,7 +191,7 @@ export default function OtpForm() {
           className={`w-full py-3 px-4 rounded-lg font-semibold text-black transition-all ${
             isPending || otp.join("").length !== 6
               ? "bg-gray-300 cursor-not-allowed"
-              : "bg-[#cbfe33] hover:bg-[#b8e529] active:scale-[0.98]"
+              : "bg-primary hover:bg-[#b8e529] active:scale-[0.98]"
           }`}
         >
           {isPending ? (
@@ -193,7 +213,7 @@ export default function OtpForm() {
             className={`font-medium transition-colors ${
               timeLeft > 0
                 ? "text-gray-400 cursor-not-allowed"
-                : "text-[#cbfe33] hover:text-[#b8e529]"
+                : "text-primary hover:text-[#b8e529]"
             }`}
           >
             {timeLeft > 0 ? `Resend in ${timeLeft}s` : "Resend OTP"}

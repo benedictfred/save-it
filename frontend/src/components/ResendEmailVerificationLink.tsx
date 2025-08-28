@@ -1,14 +1,18 @@
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useTimer } from "../hooks/useTimer";
 import { resendVerificationEmail } from "../services/authService";
 import { toast } from "react-toastify";
+import Loader from "./Loader";
+import { useAuth } from "../contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 export default function ResendEmailVerificationLink() {
-  const { timeLeft, setTimeLeft } = useTimer(60);
+  const { timeLeft, setTimeLeft } = useTimer(0);
   const [isLoading, setIsLoading] = useState(false);
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
-  async function handleResend() {
-    setTimeLeft(60);
+  const sendVerificationEmail = useCallback(async () => {
     try {
       setIsLoading(true);
       const { message } = await resendVerificationEmail();
@@ -20,6 +24,23 @@ export default function ResendEmailVerificationLink() {
     } finally {
       setIsLoading(false);
     }
+  }, []);
+
+  useEffect(() => {
+    const initialize = async () => {
+      if (user?.emailVerified) {
+        navigate("/verify-phone", { replace: true });
+        return;
+      }
+      await sendVerificationEmail();
+    };
+    initialize();
+  }, [sendVerificationEmail, navigate, user]);
+
+  async function handleResend() {
+    if (timeLeft > 0) return;
+    await sendVerificationEmail();
+    setTimeLeft(60);
   }
 
   return (
@@ -41,6 +62,7 @@ export default function ResendEmailVerificationLink() {
           Send Email {timeLeft > 0 && `(${timeLeft})`}
         </button>
       </div>
+      {isLoading && <Loader />}
     </section>
   );
 }

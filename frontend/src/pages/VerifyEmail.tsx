@@ -3,33 +3,36 @@ import { verifyEmail } from "../services/authService";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import Loader from "../components/Loader";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function VerifyEmail() {
   const { token } = useParams();
+  const { user, fetchUser } = useAuth();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
+    if (user?.emailVerified) {
+      navigate("/verify-phone", { replace: true });
+      return;
+    }
     const verify = async () => {
       try {
         setIsLoading(true);
         await verifyEmail(token as string);
+        await fetchUser();
         toast.success("Email verified successfully!");
-        navigate("/verify-phone");
+        return navigate("/verify-phone");
       } catch (error) {
-        if (error instanceof Error) {
-          toast.error(error.message);
-        } else {
-          toast.error("An unexpected error occurred");
-        }
-        navigate("/resend-email");
+        toast.error((error as Error)?.message || "Email verification failed");
+        return navigate("/resend-email");
       } finally {
         setIsLoading(false);
       }
     };
 
     verify();
-  }, [token, navigate]);
+  }, [token, navigate, user, fetchUser]);
 
   if (isLoading) return <Loader />;
 

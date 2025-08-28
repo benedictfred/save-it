@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { useState } from "react";
 import { FaRegEye, FaRegEyeSlash } from "../utils/icons";
 import { useRegister } from "../hooks/useRegister";
+import Loader from "./Loader";
 
 export type SignUpFormData = {
   name: string;
@@ -22,7 +23,7 @@ export default function SignUpForm() {
     formState: { errors, isSubmitting },
   } = useForm<SignUpFormData>();
 
-  const { mutate: registerUser } = useRegister();
+  const { mutate: registerUser, isPending } = useRegister();
 
   const onSubmit = async (data: SignUpFormData) => {
     registerUser(data);
@@ -163,6 +164,7 @@ export default function SignUpForm() {
           Sign In
         </Link>
       </div>
+      {isPending && <Loader />}
     </form>
   );
 }

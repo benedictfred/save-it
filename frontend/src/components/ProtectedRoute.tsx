@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import Loader from "./Loader";
@@ -10,22 +10,47 @@ export default function ProtectedRoute({
 }: {
   children: React.ReactNode;
 }) {
-  const { user, isLoading, error } = useAuth();
+  const { user, isLoading, isRefetching, error } = useAuth();
   const navigate = useNavigate();
   const { pathname } = useLocation();
+  const [isChecking, setIsChecking] = useState(true);
 
   useEffect(() => {
-    if (!isLoading && (!user || error)) {
+    if (isLoading || isRefetching) return;
+
+    // 1. Not logged in
+    if (!user || error) {
       toast.error(error?.message || "Please login to get access");
       navigate("/sign-in", { replace: true });
-    } else if (user && authPages.find((el) => pathname.startsWith(el))) {
-      navigate("/home", { replace: true });
+      return;
     }
-  }, [error, navigate, user, isLoading, pathname]);
 
-  if (isLoading) return <Loader />;
+    // 2. Logged in but on auth pages
+    if (authPages.some((el) => pathname.startsWith(el))) {
+      navigate("/home", { replace: true });
+      return;
+    }
 
-  if (!user) return null;
+    // 3. Email must be verified first
+    if (!user.emailVerified && pathname !== "/resend-email") {
+      navigate("/resend-email", { replace: true });
+      return;
+    }
+
+    // 4. Only check phone if email is verified
+    if (
+      user.emailVerified &&
+      !user.phoneVerified &&
+      pathname !== "/verify-phone"
+    ) {
+      navigate("/verify-phone", { replace: true });
+      return;
+    }
+
+    setIsChecking(false);
+  }, [error, navigate, user, isLoading, isRefetching, pathname]);
+
+  if (isLoading || isChecking) return <Loader />;
 
   return <>{children}</>;
 }

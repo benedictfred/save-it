@@ -6,6 +6,14 @@ export type User = {
   accountNumber: string;
   balance: number;
   hasPin: boolean;
+  status:
+    | "pending"
+    | "active"
+    | "email_verified"
+    | "phone_verified"
+    | "suspended";
+  emailVerified: boolean;
+  phoneVerified: boolean;
   transactions: Transaction[] | [];
   notifications: Notification[] | [];
   recentTransactions: Transaction[] | [];

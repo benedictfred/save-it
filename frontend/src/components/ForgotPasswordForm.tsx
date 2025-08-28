@@ -12,7 +12,7 @@ interface ForgotPasswordData {
 
 export default function ForgotPasswordForm() {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const { timeLeft, setTimeLeft } = useTimer(60);
+  const { timeLeft, setTimeLeft } = useTimer(0);
   const { mutate: handleForgotPassword, isPending } = useForgotPassword();
   const {
     handleSubmit,
@@ -42,7 +42,7 @@ export default function ForgotPasswordForm() {
         {errors.email && <p className="text-red-500">{errors.email.message}</p>}
         {timeLeft > 0 && (
           <div className="mt-4 text-right text-gray-700">
-            Reset link expires in:{" "}
+            You can resend the link in:
             <span className="font-bold">{formatCountdown(timeLeft)}</span>
           </div>
         )}
