@@ -9,7 +9,7 @@ import { useAuth } from "../contexts/AuthContext";
 
 export default function Home() {
   const [hideBalance, setHideBalance] = useState(true);
-  const { user, fetchUser, isLoading } = useAuth();
+  const { user, fetchUser, isLoading, isRefetching } = useAuth();
 
   if (user === null) return <Loader />;
   return (
@@ -32,7 +32,7 @@ export default function Home() {
         <div className="space-y-3 items-center justify-center max-sm:ml-auto">
           <p className="flex items-center justify-center space-x-3">
             <IoMdRefresh
-              className={`cursor-pointer ${isLoading ? "animate-spin" : ""}`}
+              className={`cursor-pointer ${isRefetching ? "animate-spin" : ""}`}
               onClick={async () => await fetchUser()}
             />
             <span className="text-sm">Available Balance</span>
@@ -58,7 +58,7 @@ export default function Home() {
             See All
           </Link>
         </div>
-        {user?.transactions?.length === 0 ? (
+        {user?.recentTransactions?.length === 0 ? (
           <p className="text-center text-2xl text-gray-400 italic p-5">
             No Transactions Yet
           </p>

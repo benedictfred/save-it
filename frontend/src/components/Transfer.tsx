@@ -2,11 +2,12 @@ import { useState } from "react";
 import { Outlet } from "react-router-dom";
 import { useSetPin } from "../hooks/useSetPin";
 import { useAuth } from "../contexts/AuthContext";
+import Loader from "./Loader";
 
 export default function Transfer() {
   const [pin, setPin] = useState("");
   const { user } = useAuth();
-  const { mutate: handleSetPin } = useSetPin();
+  const { mutate: handleSetPin, isPending } = useSetPin();
 
   return (
     <section className="w-full p-5 overflow-y-auto">
@@ -35,6 +36,7 @@ export default function Transfer() {
                 </button>
               </div>
             </div>
+            {isPending && <Loader />}
           </div>
         )}
       </div>

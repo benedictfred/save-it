@@ -1,6 +1,6 @@
 import {
   getUserNotifications,
-  notificationEventHandler,
+  markAllAsRead,
 } from "../controllers/notification.controller";
 import { Router } from "express";
 import { protect } from "../middlewares/auth.middleware";
@@ -8,6 +8,7 @@ import { protect } from "../middlewares/auth.middleware";
 const router = Router();
 
 router.get("/history", protect, getUserNotifications);
-router.get("/stream", protect, notificationEventHandler);
+router.patch("/mark-all-as-read", protect, markAllAsRead);
+// router.get("/stream", protect, notificationEventHandler);
 
 export default router;

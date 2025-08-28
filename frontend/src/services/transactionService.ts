@@ -13,12 +13,12 @@ export async function transferAmount(
     body: JSON.stringify(data),
   });
 
+  const responseData = await response.json();
+
   if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData?.message || "Transfer Failed");
+    throw new Error(responseData?.message || "Transfer Failed");
   }
 
-  const responseData = await response.json();
   return responseData;
 }
 
@@ -27,5 +27,10 @@ export async function getTransactionHistory(): Promise<Transaction[] | []> {
     credentials: "include",
   });
   const { data } = await res.json();
+
+  if (!res.ok) {
+    throw new Error("Could not fetch transactions");
+  }
+
   return data;
 }

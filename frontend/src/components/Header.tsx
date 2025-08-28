@@ -66,10 +66,16 @@ export default function Header() {
               <IoMdNotifications size={30} />
               <span
                 className={`absolute -top-1.5 -right-1.5 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full ${
-                  user!.recentNotifications!.length > 0 ? "block" : "hidden"
+                  user!.recentNotifications!.filter((notif) => !notif.read)
+                    .length > 0
+                    ? "block"
+                    : "hidden"
                 }`}
               >
-                {user?.recentNotifications?.length}
+                {
+                  user?.recentNotifications?.filter((notif) => !notif.read)
+                    .length
+                }
               </span>
             </button>
 

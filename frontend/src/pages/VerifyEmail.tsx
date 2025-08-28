@@ -1,5 +1,5 @@
 import { useNavigate, useParams } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import Loader from "../components/Loader";
 import { useAuth } from "../contexts/AuthContext";
 import { useVerifyEmail } from "../hooks/useVerifyEmail";
@@ -9,8 +9,11 @@ export default function VerifyEmail() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { mutate: verifyEmail, isPending } = useVerifyEmail();
+  const hasRun = useRef(false);
 
   useEffect(() => {
+    if (hasRun.current) return;
+
     if (user?.emailVerified) {
       navigate("/verify-phone", { replace: true });
       return;
@@ -18,6 +21,7 @@ export default function VerifyEmail() {
 
     if (token) {
       verifyEmail(token);
+      hasRun.current = true;
     }
   }, [token, navigate, user, verifyEmail]);
 

@@ -33,9 +33,10 @@ export default function ResendEmailVerificationLink() {
         return;
       }
       await sendVerificationEmail();
+      setTimeLeft(60);
     };
     initialize();
-  }, [sendVerificationEmail, navigate, user]);
+  }, [sendVerificationEmail, navigate, user, setTimeLeft]);
 
   async function handleResend() {
     if (timeLeft > 0) return;
