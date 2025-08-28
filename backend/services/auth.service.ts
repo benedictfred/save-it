@@ -24,6 +24,8 @@ import { sendSMS } from "../utils/twilio";
 import { verifyEmailTemplate } from "../templates/verifyAccoutEmail";
 import { CustomJwtPayload, signToken, verifyToken } from "../utils/jwt";
 
+const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+
 export const signUp = async (body: SignupInput) => {
   const { name, phoneNumber, accountNumber, password, email } =
     signupSchema.parse(body);
@@ -32,11 +34,10 @@ export const signUp = async (body: SignupInput) => {
     data: { name, phoneNumber, accountNumber, password, email },
   });
 
-  const token = signToken(user.id);
-  await sendVerificationEmail(user.id);
+  const token = signToken(user.id, "20m");
   return {
     user: sanitizeUser(user),
-    message: "Account created successfully. Please check your email to verify.",
+    message: "Account created successfully.",
     token,
   };
 };
@@ -59,7 +60,11 @@ export const login = async (body: LoginInput) => {
     throw new AppError("Invalid phone number or password", 401);
   }
 
-  const token = signToken(user.id);
+  let token;
+
+  user.status === "pending"
+    ? (token = signToken(user.id, "20m"))
+    : (token = signToken(user.id));
 
   return {
     user: sanitizeUser(user),
@@ -118,7 +123,7 @@ export const forgotPassword = async (email: string) => {
     },
   });
 
-  const resetLink = `http://localhost:5173/reset-password/${resetToken}`;
+  const resetLink = `${frontendUrl}/reset-password/${resetToken}`;
   try {
     await sendEmail({
       email,
@@ -192,8 +197,15 @@ export const sendVerificationEmail = async (userId: string) => {
   const emailToken = generateRandomToken();
   const hashedEmailToken = hashToken(emailToken);
 
-  await prisma.verificationToken.create({
-    data: {
+  await prisma.verificationToken.upsert({
+    where: {
+      userId_type: { userId, type: "email" },
+    },
+    update: {
+      token: hashedEmailToken,
+      expiresAt: new Date(Date.now() + 10 * 60 * 1000),
+    },
+    create: {
       userId: user.id,
       type: "email",
       token: hashedEmailToken,
@@ -201,7 +213,7 @@ export const sendVerificationEmail = async (userId: string) => {
     },
   });
 
-  const verificationLink = `http://localhost:5173/verify-email/${emailToken}`;
+  const verificationLink = `${frontendUrl}/verify-email/${emailToken}`;
   try {
     await sendEmail({
       email: user.email,
@@ -245,7 +257,7 @@ export const verifyEmail = async (token: string) => {
 
     const updatedUser = await tx.user.update({
       where: { id: user.id },
-      data: { emailVerified: true },
+      data: { emailVerified: true, status: "email_verified" },
     });
 
     await tx.verificationToken.deleteMany({
@@ -258,18 +270,9 @@ export const verifyEmail = async (token: string) => {
     return updatedUser;
   });
 
-  // After email verification, trigger initial OTP send
-  try {
-    await sendPhoneVerificationOTP(verifiedUser.id);
-    return {
-      message: "Email verified and OTP sent successfully",
-    };
-  } catch (err) {
-    console.log("Error sending OTP after email verification:", err);
-    return {
-      message: "Email verified but failed to send OTP",
-    };
-  }
+  return {
+    message: "Email verified successfully",
+  };
 };
 
 export const sendPhoneVerificationOTP = async (userId: string) => {
@@ -285,21 +288,20 @@ export const sendPhoneVerificationOTP = async (userId: string) => {
     throw new AppError("Phone number already verified", 400);
   }
 
-  // Clear any existing OTP tokens
-  await prisma.verificationToken.deleteMany({
-    where: {
-      userId,
-      type: "phone",
-    },
-  });
-
   const otp = generateOTP();
   const hashedOtp = hashOTP(otp);
   const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
 
-  // Create new OTP token
-  await prisma.verificationToken.create({
-    data: {
+  // Update existing OTP token or create a new one
+  await prisma.verificationToken.upsert({
+    where: {
+      userId_type: { userId, type: "phone" },
+    },
+    update: {
+      token: hashedOtp,
+      expiresAt: otpExpiry,
+    },
+    create: {
       userId,
       type: "phone",
       token: hashedOtp,
@@ -317,7 +319,6 @@ export const sendPhoneVerificationOTP = async (userId: string) => {
 
 export const verifyPhoneOTP = async (userId: string, otp: string) => {
   const hashedOtp = hashOTP(otp);
-  console.log(userId, otp, hashedOtp);
   const user = await prisma.user.findFirst({
     where: {
       id: userId,
@@ -331,16 +332,17 @@ export const verifyPhoneOTP = async (userId: string, otp: string) => {
     },
   });
 
-  console.log(user);
-
   if (!user) {
     throw new AppError("Invalid OTP or OTP has expired", 400);
   }
 
   await prisma.$transaction(async (tx) => {
+    // Here I am setting the status to active because email must
+    // be verified before phone
+
     await tx.user.update({
       where: { id: userId },
-      data: { phoneVerified: true },
+      data: { phoneVerified: true, status: "active" },
     });
 
     await tx.verificationToken.deleteMany({
@@ -351,7 +353,10 @@ export const verifyPhoneOTP = async (userId: string, otp: string) => {
     });
   });
 
+  const token = signToken(userId);
+
   return {
+    token,
     message: "Phone number verified successfully",
   };
 };

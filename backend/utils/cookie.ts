@@ -20,3 +20,14 @@ export function clearCookie(res: Response) {
     partitioned: true,
   });
 }
+
+export function sendAuthCookie(res: Response, token: string) {
+  res.cookie("jwt", token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    maxAge: 20 * 60 * 1000,
+    path: "/",
+    sameSite: "none",
+    partitioned: true,
+  });
+}

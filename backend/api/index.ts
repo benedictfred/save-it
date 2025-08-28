@@ -18,7 +18,7 @@ app.use(helmet());
 app.use(cookieParser());
 app.use(
   cors({
-    origin: ["https://save-it-rho.vercel.app", "http://localhost:5173"],
+    origin: [process.env.FRONTEND_URL || "http://localhost:5173"],
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
     credentials: true,
     allowedHeaders: ["Content-Type", "Authorization"],

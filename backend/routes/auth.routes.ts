@@ -19,7 +19,7 @@ router.post("/signup", signUp);
 router.post("/login", login);
 router.post("/forgot-password", forgotPassword);
 router.post("/reset-password/:token", resetPassword);
-router.post("/verify-email/:token", protect, verifyEmail);
+router.post("/verify-email/:token", verifyEmail);
 router.post("/verify-phone", protect, verifyPhone);
 router.post("/resend-verification-email", protect, resendVerificationEmail);
 router.post("/resend-otp", protect, resendOtp);

@@ -2,13 +2,13 @@ import { NextFunction, Request, Response } from "express";
 import catchAsync from "../utils/catchAsync";
 import * as authService from "../services/auth.service";
 import { pinSchema } from "../validators/user.schema";
-import { clearCookie, sendCookie } from "../utils/cookie";
+import { clearCookie, sendAuthCookie, sendCookie } from "../utils/cookie";
 
 export const signUp = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const { user, token, message } = await authService.signUp(req.body);
 
-    sendCookie(res, token);
+    sendAuthCookie(res, token);
     res.status(201).json({
       status: "success",
       user,
@@ -21,7 +21,10 @@ export const login = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const { user, token } = await authService.login(req.body);
 
-    sendCookie(res, token);
+    user.status === "pending"
+      ? sendAuthCookie(res, token)
+      : sendCookie(res, token);
+
     res.status(200).json({
       status: "success",
       user,
