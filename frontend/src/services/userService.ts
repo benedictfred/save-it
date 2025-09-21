@@ -20,10 +20,11 @@ export async function getRecipientName(accountNumber: string): Promise<string> {
     credentials: "include",
   });
 
+  const data = await response.json();
+
   if (!response.ok) {
-    throw new Error("User not found");
+    throw new Error(data.message || "Failed to fetch recipient name");
   }
 
-  const { data } = await response.json();
-  return data.name;
+  return data.data.name;
 }

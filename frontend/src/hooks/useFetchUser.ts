@@ -8,7 +8,7 @@ export const useFetchUser = () => {
   return useQuery({
     queryKey: ["user"],
     queryFn: fetchUser,
-    staleTime: 0,
+    staleTime: 60 * 1000,
     enabled: !authPages.find((el) => pathname.startsWith(el)),
     refetchOnWindowFocus: true,
     retry: false,
