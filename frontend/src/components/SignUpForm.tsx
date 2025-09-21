@@ -8,7 +8,7 @@ import Loader from "./Loader";
 export type SignUpFormData = {
   name: string;
   email: string;
-  phoneNumber: string;
+  // phoneNumber: string;
   password: string;
   confirmPassword: string;
 };
@@ -59,7 +59,7 @@ export default function SignUpForm() {
         />
         {errors.email && <p className="text-red-500">{errors.email.message}</p>}
       </div>
-      <div className="flex flex-col gap-y-2">
+      {/* <div className="flex flex-col gap-y-2">
         <label htmlFor="number" className="text-left">
           Phone Number
         </label>
@@ -86,7 +86,7 @@ export default function SignUpForm() {
         {errors.phoneNumber && (
           <p className="text-red-500">{errors.phoneNumber.message}</p>
         )}
-      </div>
+      </div> */}
       <div className="flex flex-col gap-y-2">
         <label htmlFor="password" className="text-left ">
           Password

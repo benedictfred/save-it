@@ -6,7 +6,7 @@ import { useLogin } from "../hooks/useLogin";
 import Loader from "./Loader";
 
 export type LoginFormData = {
-  phoneNumber: string;
+  email: string;
   password: string;
 };
 export default function LoginForm() {
@@ -29,25 +29,18 @@ export default function LoginForm() {
         onSubmit={handleSubmit(onSubmit)}
       >
         <div className="flex flex-col gap-y-2">
-          <label htmlFor="number" className="text-left">
-            Phone Number
+          <label htmlFor="email" className="text-left">
+            Email Address
           </label>
-          <div className="flex items-center gap-x-2 relative">
-            <span className="p-3 bg-gray-200 border rounded-md absolute text-black">
-              +234
-            </span>
-            <input
-              type="tel"
-              id="number"
-              className="py-3 pl-20 border rounded-md w-full outline-none text-black"
-              placeholder="Enter your phone number"
-              {...register("phoneNumber", {
-                required: "Phone number is required",
-              })}
-            />
-          </div>
-          {errors.phoneNumber && (
-            <p className="text-red-500">{errors.phoneNumber.message}</p>
+          <input
+            type="email"
+            id="email"
+            className="p-3 w-full border rounded-md outline-none text-black"
+            placeholder="Enter your email address"
+            {...register("email", { required: "Email address is required" })}
+          />
+          {errors.email && (
+            <p className="text-red-500">{errors.email.message}</p>
           )}
         </div>
         <div className="flex flex-col gap-y-2">

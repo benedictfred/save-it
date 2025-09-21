@@ -14,8 +14,8 @@ export default function VerifyEmail() {
   useEffect(() => {
     if (hasRun.current) return;
 
-    if (user?.emailVerified) {
-      navigate("/verify-phone", { replace: true });
+    if (user?.status === "active") {
+      navigate("/home", { replace: true });
       return;
     }
 

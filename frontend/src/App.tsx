@@ -14,7 +14,6 @@ import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import ResendEmailPage from "./pages/ResendEmail";
 import VerifyEmail from "./pages/VerifyEmail";
-import VerifyOtp from "./pages/VerifyOtp";
 
 export default function App() {
   return (
@@ -34,14 +33,14 @@ export default function App() {
           }
         />
         <Route path="/verify-email/:token" element={<VerifyEmail />} />
-        <Route
+        {/* <Route
           path="/verify-phone"
           element={
             <ProtectedRoute>
               <VerifyOtp />
             </ProtectedRoute>
           }
-        />
+        /> */}
         <Route
           element={
             <ProtectedRoute>

@@ -32,20 +32,20 @@ export default function ProtectedRoute({
     }
 
     // 3. Email must be verified first
-    if (!user.emailVerified && pathname !== "/resend-email") {
+    if (user.status === "pending" && pathname !== "/resend-email") {
       navigate("/resend-email", { replace: true });
       return;
     }
 
     // 4. Only check phone if email is verified
-    if (
-      user.emailVerified &&
-      !user.phoneVerified &&
-      pathname !== "/verify-phone"
-    ) {
-      navigate("/verify-phone", { replace: true });
-      return;
-    }
+    // if (
+    //   user.emailVerified &&
+    //   !user.phoneVerified &&
+    //   pathname !== "/verify-phone"
+    // ) {
+    //   navigate("/verify-phone", { replace: true });
+    //   return;
+    // }
 
     setIsChecking(false);
   }, [error, navigate, user, isLoading, isRefetching, pathname]);

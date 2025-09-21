@@ -28,8 +28,8 @@ export default function ResendEmailVerificationLink() {
 
   useEffect(() => {
     const initialize = async () => {
-      if (user?.emailVerified) {
-        navigate("/verify-phone", { replace: true });
+      if (user?.status === "active") {
+        navigate("/home", { replace: true });
         return;
       }
       await sendVerificationEmail();
