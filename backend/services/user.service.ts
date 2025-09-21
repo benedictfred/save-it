@@ -1,6 +1,7 @@
 import { prisma } from "../prisma/prisma";
 import AppError from "../utils/appError";
 import { User } from "@prisma/client";
+import { validateAccountNumber } from "../utils/generateAccNumber";
 
 export const getDashboard = async (user: Partial<User>) => {
   const currentUser = await prisma.user.findUnique({
@@ -26,6 +27,11 @@ export const getDashboard = async (user: Partial<User>) => {
 };
 
 export const resolveAccount = async (accountNumber: string) => {
+  // Early validation of account number format
+  if (!accountNumber || !validateAccountNumber(accountNumber)) {
+    throw new AppError("Invalid account number", 400);
+  }
+
   const user = await prisma.user.findUnique({
     where: { accountNumber },
     select: {

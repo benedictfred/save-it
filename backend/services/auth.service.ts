@@ -11,30 +11,26 @@ import {
   SignupInput,
   signupSchema,
 } from "../validators/auth.schema";
-import { Request } from "express";
 import { sendEmail } from "../utils/email";
 import { resetPasswordTemplate } from "../templates/resetPasswordEmail";
-import {
-  generateOTP,
-  generateRandomToken,
-  hashOTP,
-  hashToken,
-} from "../utils/generateToken";
-import { sendSMS } from "../utils/twilio";
+import { generateRandomToken, hashToken } from "../utils/generateToken";
 import { verifyEmailTemplate } from "../templates/verifyAccoutEmail";
-import { CustomJwtPayload, signToken, verifyToken } from "../utils/jwt";
+import { signToken } from "../utils/jwt";
+import { generateAccountNumber } from "../utils/generateAccNumber";
 
 const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
 
 export const signUp = async (body: SignupInput) => {
-  const { name, phoneNumber, accountNumber, password, email } =
-    signupSchema.parse(body);
+  const { name, password, email } = signupSchema.parse(body);
+
+  const accountNumber = await generateAccountNumber();
 
   const user = await prisma.user.create({
-    data: { name, phoneNumber, accountNumber, password, email },
+    data: { name, password, email, accountNumber },
   });
 
   const token = signToken(user.id, "20m");
+
   return {
     user: sanitizeUser(user),
     message: "Account created successfully.",
@@ -43,14 +39,14 @@ export const signUp = async (body: SignupInput) => {
 };
 
 export const login = async (body: LoginInput) => {
-  const { phoneNumber, password } = loginSchema.parse(body);
+  const { email, password } = loginSchema.parse(body);
 
-  if (!phoneNumber || !password) {
-    throw new AppError("Please provide Phone Number and Password", 400);
+  if (!email || !password) {
+    throw new AppError("Please provide Email and Password", 400);
   }
 
   const user = await prisma.user.findUnique({
-    where: { phoneNumber },
+    where: { email },
     omit: {
       password: false,
     },
@@ -257,7 +253,7 @@ export const verifyEmail = async (token: string) => {
 
     const updatedUser = await tx.user.update({
       where: { id: user.id },
-      data: { emailVerified: true, status: "email_verified" },
+      data: { emailVerified: true, status: "active" },
     });
 
     await tx.verificationToken.deleteMany({
@@ -270,93 +266,96 @@ export const verifyEmail = async (token: string) => {
     return updatedUser;
   });
 
+  const accessToken = signToken(verifiedUser.id);
+
   return {
     message: "Email verified successfully",
+    newToken: accessToken,
   };
 };
 
-export const sendPhoneVerificationOTP = async (userId: string) => {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-  });
+// export const sendPhoneVerificationOTP = async (userId: string) => {
+//   const user = await prisma.user.findUnique({
+//     where: { id: userId },
+//   });
 
-  if (!user) {
-    throw new AppError("User not found", 404);
-  }
+//   if (!user) {
+//     throw new AppError("User not found", 404);
+//   }
 
-  if (user.phoneVerified) {
-    throw new AppError("Phone number already verified", 400);
-  }
+//   if (user.phoneVerified) {
+//     throw new AppError("Phone number already verified", 400);
+//   }
 
-  const otp = generateOTP();
-  const hashedOtp = hashOTP(otp);
-  const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
+//   const otp = generateOTP();
+//   const hashedOtp = hashOTP(otp);
+//   const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
 
-  // Update existing OTP token or create a new one
-  await prisma.verificationToken.upsert({
-    where: {
-      userId_type: { userId, type: "phone" },
-    },
-    update: {
-      token: hashedOtp,
-      expiresAt: otpExpiry,
-    },
-    create: {
-      userId,
-      type: "phone",
-      token: hashedOtp,
-      expiresAt: otpExpiry,
-    },
-  });
+//   // Update existing OTP token or create a new one
+//   await prisma.verificationToken.upsert({
+//     where: {
+//       userId_type: { userId, type: "phone" },
+//     },
+//     update: {
+//       token: hashedOtp,
+//       expiresAt: otpExpiry,
+//     },
+//     create: {
+//       userId,
+//       type: "phone",
+//       token: hashedOtp,
+//       expiresAt: otpExpiry,
+//     },
+//   });
 
-  // Send SMS
-  await sendSMS(user.phoneNumber, otp);
+//   // Send SMS
+//   await sendSMS(user.phoneNumber, otp);
 
-  return {
-    message: "OTP sent successfully and expires in 10 minutes",
-  };
-};
+//   return {
+//     message: "OTP sent successfully and expires in 10 minutes",
+//   };
+// };
 
-export const verifyPhoneOTP = async (userId: string, otp: string) => {
-  const hashedOtp = hashOTP(otp);
-  const user = await prisma.user.findFirst({
-    where: {
-      id: userId,
-      verificationTokens: {
-        some: {
-          token: hashedOtp,
-          type: "phone",
-          expiresAt: { gt: new Date() },
-        },
-      },
-    },
-  });
+// export const verifyPhoneOTP = async (userId: string, otp: string) => {
+//   const hashedOtp = hashOTP(otp);
+//   const user = await prisma.user.findFirst({
+//     where: {
+//       id: userId,
+//       verificationTokens: {
+//         some: {
+//           token: hashedOtp,
+//           type: "phone",
+//           expiresAt: { gt: new Date() },
+//         },
+//       },
+//     },
+//   });
 
-  if (!user) {
-    throw new AppError("Invalid OTP or OTP has expired", 400);
-  }
+//   if (!user) {
+//     throw new AppError("Invalid OTP or OTP has expired", 400);
+//   }
 
-  await prisma.$transaction(async (tx) => {
-    // Here I am setting the status to active because email must
-    // be verified before phone
+//   await prisma.$transaction(async (tx) => {
+//     // Here I am setting the status to active because email must
+//     // be verified before phone
 
-    await tx.user.update({
-      where: { id: userId },
-      data: { phoneVerified: true, status: "active" },
-    });
+//     await tx.user.update({
+//       where: { id: userId },
+//       data: { phoneVerified: true, status: "active" },
+//     });
 
-    await tx.verificationToken.deleteMany({
-      where: {
-        userId,
-        type: "phone",
-      },
-    });
-  });
+//     await tx.verificationToken.deleteMany({
+//       where: {
+//         userId,
+//         type: "phone",
+//       },
+//     });
+//   });
 
-  const token = signToken(userId);
+//   const token = signToken(userId);
 
-  return {
-    token,
-    message: "Phone number verified successfully",
-  };
-};
+//   return {
+//     token,
+//     message: "Phone number verified successfully",
+//   };
+// };

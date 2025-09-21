@@ -8,7 +8,9 @@ export const signUp = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const { user, token, message } = await authService.signUp(req.body);
 
+    // Send auth cookie for unverified users
     sendAuthCookie(res, token);
+
     res.status(201).json({
       status: "success",
       user,
@@ -75,20 +77,10 @@ export const verifyEmail = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const { token } = req.params;
 
-    const { message } = await authService.verifyEmail(token);
+    const { message, newToken } = await authService.verifyEmail(token);
 
-    res.status(200).json({
-      status: "success",
-      message,
-    });
-  }
-);
-
-export const verifyPhone = catchAsync(
-  async (req: Request, res: Response, next: NextFunction) => {
-    const { otp } = req.body;
-
-    const { message } = await authService.verifyPhoneOTP(req.user.id, otp);
+    // Send real token after verification
+    sendCookie(res, newToken);
 
     res.status(200).json({
       status: "success",
@@ -108,18 +100,30 @@ export const resendVerificationEmail = catchAsync(
   }
 );
 
-export const resendOtp = catchAsync(
-  async (req: Request, res: Response, next: NextFunction) => {
-    const { message } = await authService.sendPhoneVerificationOTP(req.user.id);
-
-    res.status(200).json({
-      status: "success",
-      message,
-    });
-  }
-);
-
 export const logout = (req: Request, res: Response) => {
   clearCookie(res);
   res.status(200).json({ message: "Logged out successfully" });
 };
+
+// export const verifyPhone = catchAsync(
+//   async (req: Request, res: Response, next: NextFunction) => {
+//     const { otp } = req.body;
+
+//     const { message } = await authService.verifyPhoneOTP(req.user.id, otp);
+
+//     res.status(200).json({
+//       status: "success",
+//       message,
+//     });
+//   }
+// );
+// export const resendOtp = catchAsync(
+//   async (req: Request, res: Response, next: NextFunction) => {
+//     const { message } = await authService.sendPhoneVerificationOTP(req.user.id);
+
+//     res.status(200).json({
+//       status: "success",
+//       message,
+//     });
+//   }
+// );

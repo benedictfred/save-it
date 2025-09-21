@@ -10,15 +10,15 @@ datasource db {
 model User {
   id                String         @id @default(uuid())
   name              String
-  phoneNumber       String         @unique
-  accountNumber     String?        @unique
+  phoneNumber       String?        @unique
+  accountNumber     String         @unique
   email             String         @unique
   password          String
   passwordChangedAt DateTime?
   pin               String?
   balance           Float          @default(2000)
-  emailVerified     Boolean       @default(false)
-  phoneVerified     Boolean       @default(false)
+  emailVerified     Boolean        @default(false)
+  phoneVerified     Boolean?       @default(false)
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
   status            AccountStatus  @default(pending)
@@ -78,8 +78,8 @@ enum TransactionStatus {
 
 enum AccountStatus {
   pending
-  email_verified
-  phone_verified
+  // email_verified
+  // phone_verified
   active
   suspended
 }

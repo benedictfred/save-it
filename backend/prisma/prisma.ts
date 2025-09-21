@@ -8,6 +8,8 @@ export const prisma = new PrismaClient({
       password: true,
       passwordChangedAt: true,
       pin: true,
+      phoneVerified: true,
+      emailVerified: true,
       createdAt: true,
       updatedAt: true,
     },
