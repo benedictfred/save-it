@@ -12,7 +12,7 @@ export function useVerifyEmail() {
     onSuccess: () => {
       toast.success("Email verified successfully!");
       queryClient.invalidateQueries({ queryKey: ["user"] });
-      navigate("/verify-phone", { replace: true });
+      navigate("/home", { replace: true });
     },
     onError: (error) => {
       toast.error(error?.message || "Email verification failed");
