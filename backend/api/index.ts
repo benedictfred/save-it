@@ -10,6 +10,7 @@ import globalErrorHandler from "../middlewares/error.middleware";
 import helmet from "helmet";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import { apiLimiter } from "../middlewares/ratelimit.middleware";
 
 dotenv.config();
 
@@ -31,6 +32,8 @@ if (process.env.NODE_ENV === "development") {
 }
 
 const PORT = process.env.PORT || 8000;
+
+app.use("/api", apiLimiter);
 
 app.use("/api/v2/auth", authRouter);
 app.use("/api/v2/users", userRouter);

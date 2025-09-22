@@ -5,19 +5,6 @@ import * as userService from "../services/user.service";
 import { sanitizeUser } from "../utils/sanitize";
 import { User } from "@prisma/client";
 
-export const getAllUsers = catchAsync(
-  async (req: Request, res: Response, next: NextFunction) => {
-    const users = await prisma.user.findMany({
-      include: {
-        transactions: true,
-      },
-    });
-    res.status(200).json({
-      users,
-    });
-  }
-);
-
 export const getDashboard = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const { currentUser, recentTransactions, recentNotifications } =

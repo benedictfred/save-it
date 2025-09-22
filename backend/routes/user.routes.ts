@@ -1,15 +1,11 @@
-import {
-  getAllUsers,
-  getDashboard,
-  resolveAccount,
-} from "../controllers/user.controller";
+import { getDashboard, resolveAccount } from "../controllers/user.controller";
 import { Router } from "express";
 import { protect } from "../middlewares/auth.middleware";
+import { readLimiter } from "../middlewares/ratelimit.middleware";
 
 const router = Router();
 
-router.get("/dashboard", protect, getDashboard);
-router.route("/:accountNumber").get(protect, resolveAccount);
-// router.route("/").get(protect, getAllUsers);
+router.get("/dashboard", readLimiter, protect, getDashboard);
+router.get("/:accountNumber", protect, resolveAccount);
 
 export default router;
