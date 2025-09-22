@@ -1,12 +1,14 @@
 # Save-It
 
-Save-It is a simple banking web application designed with minimal features to demonstrate essential banking functionalities like user registration, login, transfers, and balance tracking.
+Save-It is a simple banking web application built to demonstrate essential banking functionalities with a clean and minimal design.
+It provides users with a smooth experience for account management, transfers, and real-time notifications.
 
 ## Features
 
-- User Registration and Login (Just basic registration)
+- User Authentication with Email Verification
 - Account Balance Management
 - Fund Transfers
+- Realtime updates
 - Transaction History
 
 ## Technologies Used
@@ -22,9 +24,7 @@ Save-It is a simple banking web application designed with minimal features to de
 
 - Node.js
 - Express
-- MongoDB
-- Mongoose
-- bcrypt
-- CORS
+- PostgreSQL
+- Prisma ORM
 
 If you need tokens to test the app's functionalities, feel free to send me an email at: nebolisaugochukwu@gmail.com
