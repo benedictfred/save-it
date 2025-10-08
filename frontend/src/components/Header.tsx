@@ -10,6 +10,19 @@ export default function Header() {
   const [notifOpen, setNotifOpen] = useState(false);
   const notifRef = useRef<HTMLDivElement>(null);
 
+  // Here we update the document title based on unread notifications
+  useEffect(() => {
+    const unreadCount = user?.recentNotifications?.filter(
+      (notif) => !notif.read
+    ).length;
+
+    if (unreadCount) {
+      document.title = `(${unreadCount}) Save It`;
+    } else {
+      document.title = "Save It";
+    }
+  }, [user?.recentNotifications]);
+
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (
