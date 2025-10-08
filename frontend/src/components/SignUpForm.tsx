@@ -4,6 +4,7 @@ import { useState } from "react";
 import { FaRegEye, FaRegEyeSlash } from "../utils/icons";
 import { useRegister } from "../hooks/useRegister";
 import Loader from "./Loader";
+import { formatNameToCapitalize } from "../utils/helpers";
 
 export type SignUpFormData = {
   name: string;
@@ -26,7 +27,7 @@ export default function SignUpForm() {
   const { mutate: registerUser, isPending } = useRegister();
 
   const onSubmit = async (data: SignUpFormData) => {
-    registerUser(data);
+    registerUser({ ...data, name: formatNameToCapitalize(data.name) });
   };
   return (
     <form
