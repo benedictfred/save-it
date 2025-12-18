@@ -1,5 +1,6 @@
 import {
   forgotPassword,
+  googleAuth,
   login,
   logout,
   resendVerificationEmail,
@@ -20,6 +21,7 @@ const router = Router();
 
 router.post("/signup", authLimiter, signUp);
 router.post("/login", authLimiter, login);
+router.post("/google", authLimiter, googleAuth);
 router.post("/forgot-password", passwordResetLimiter, forgotPassword);
 router.post("/reset-password/:token", resetPassword);
 router.post("/verify-email/:token", verifyEmail);

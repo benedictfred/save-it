@@ -3,6 +3,7 @@ import catchAsync from "../utils/catchAsync";
 import * as authService from "../services/auth.service";
 import { pinSchema } from "../validators/user.schema";
 import { clearCookie, sendAuthCookie, sendCookie } from "../utils/cookie";
+import AppError from "../utils/appError";
 
 export const signUp = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -30,6 +31,30 @@ export const login = catchAsync(
     res.status(200).json({
       status: "success",
       user,
+    });
+  }
+);
+
+export const googleAuth = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { idToken } = req.body;
+
+    if (!idToken) {
+      throw new AppError("ID token is required", 400);
+    }
+
+    const { user, token, isNewUser } = await authService.googleAuth(idToken);
+
+    user.status === "pending"
+      ? sendAuthCookie(res, token)
+      : sendCookie(res, token);
+
+    res.status(isNewUser ? 201 : 200).json({
+      status: "success",
+      user,
+      message: isNewUser
+        ? "Account created successfully with Google"
+        : "Logged in successfully with Google",
     });
   }
 );

@@ -17,6 +17,7 @@ import { generateRandomToken, hashToken } from "../utils/generateToken";
 import { verifyEmailTemplate } from "../templates/verifyAccoutEmail";
 import { signToken } from "../utils/jwt";
 import { generateAccountNumber } from "../utils/generateAccNumber";
+import { verifyIdToken } from "../utils/firebaseAdmin";
 
 const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
 
@@ -65,6 +66,61 @@ export const login = async (body: LoginInput) => {
   return {
     user: sanitizeUser(user),
     token,
+  };
+};
+
+export const googleAuth = async (idToken: string) => {
+  // Verify the Firebase ID token
+  const decodedToken = await verifyIdToken(idToken);
+
+  console.log(decodedToken);
+
+  if (!decodedToken.email) {
+    throw new AppError("Email not found in Google account", 400);
+  }
+
+  // Check if user exists
+  const existingUser = await prisma.user.findUnique({
+    where: { email: decodedToken.email },
+  });
+
+  if (existingUser) {
+    const token =
+      existingUser.status === "pending"
+        ? signToken(existingUser.id, "20m")
+        : signToken(existingUser.id);
+
+    return {
+      user: sanitizeUser(existingUser),
+      token,
+      isNewUser: false,
+    };
+  }
+
+  // New user - create account
+  const accountNumber = await generateAccountNumber();
+
+  // Generate a random password for Google users (they won't use it)
+  const randomPassword = crypto.randomBytes(32).toString("hex");
+  const hashedPassword = await bcrypt.hash(randomPassword, 12);
+
+  const newUser = await prisma.user.create({
+    data: {
+      name: decodedToken.name || "User",
+      email: decodedToken.email,
+      password: hashedPassword,
+      accountNumber,
+      emailVerified: true,
+      status: "active",
+    },
+  });
+
+  const token = signToken(newUser.id, "20m");
+
+  return {
+    user: sanitizeUser(newUser),
+    token,
+    isNewUser: true,
   };
 };
 
