@@ -70,16 +70,12 @@ export const login = async (body: LoginInput) => {
 };
 
 export const googleAuth = async (idToken: string) => {
-  // Verify the Firebase ID token
   const decodedToken = await verifyIdToken(idToken);
-
-  console.log(decodedToken);
 
   if (!decodedToken.email) {
     throw new AppError("Email not found in Google account", 400);
   }
 
-  // Check if user exists
   const existingUser = await prisma.user.findUnique({
     where: { email: decodedToken.email },
   });
@@ -97,10 +93,7 @@ export const googleAuth = async (idToken: string) => {
     };
   }
 
-  // New user - create account
   const accountNumber = await generateAccountNumber();
-
-  // Generate a random password for Google users (they won't use it)
   const randomPassword = crypto.randomBytes(32).toString("hex");
   const hashedPassword = await bcrypt.hash(randomPassword, 12);
 
