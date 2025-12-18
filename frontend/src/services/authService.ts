@@ -73,6 +73,25 @@ export async function logout() {
   return res.json();
 }
 
+export async function googleAuth(idToken: string): Promise<LoginResponse> {
+  const res = await fetch(`${API_URL}/auth/google`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+    body: JSON.stringify({ idToken }),
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    throw new Error(data.message || "Google authentication failed");
+  }
+
+  return data;
+}
+
 export async function forgotPassword(payload: {
   email: string;
 }): Promise<ApiResponse> {
