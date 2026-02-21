@@ -29,7 +29,7 @@ export async function transfer({
   if (sender.accountNumber === recipientAccNumber)
     throw new AppError("Cannot transfer to self", 400);
 
-  const isCorrectPin = bcrypt.compare(pin, sender.pin!);
+  const isCorrectPin = await bcrypt.compare(pin, sender.pin!);
   if (!isCorrectPin) throw new AppError("Incorrect PIN", 401);
 
   const recipient = await prisma.user.findUnique({
@@ -162,7 +162,7 @@ export async function transfer({
 
     throw new AppError(
       err instanceof AppError ? err.message : "Transaction Failed",
-      err instanceof AppError ? err.statusCode : 500
+      err instanceof AppError ? err.statusCode : 500,
     );
   }
 }
