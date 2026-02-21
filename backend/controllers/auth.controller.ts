@@ -15,6 +15,7 @@ export const signUp = catchAsync(
     res.status(201).json({
       status: "success",
       user,
+      token,
       message,
     });
   }
@@ -31,6 +32,7 @@ export const login = catchAsync(
     res.status(200).json({
       status: "success",
       user,
+      token,
     });
   }
 );
