@@ -38,3 +38,17 @@ export const resolveAccount = catchAsync(
     });
   },
 );
+
+export const updatePushToken = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { pushToken } = req.body;
+    const userId = req.user.id;
+
+    await userService.updatePushToken(userId, pushToken);
+
+    res.status(200).json({
+      status: "success",
+      message: "Push token updated successfully",
+    });
+  },
+);

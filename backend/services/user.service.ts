@@ -53,3 +53,22 @@ export const resolveAccount = async (
 
   return user;
 };
+
+export const updatePushToken = async (userId: string, pushToken: string) => {
+  if (!pushToken) {
+    throw new AppError("Push token is required", 400);
+  }
+
+  await prisma.device.upsert({
+    where: {
+      pushToken,
+    },
+    update: {
+      userId,
+    },
+    create: {
+      userId,
+      pushToken,
+    },
+  });
+};
