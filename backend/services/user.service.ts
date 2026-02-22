@@ -26,10 +26,17 @@ export const getDashboard = async (user: Partial<User>) => {
   return { currentUser, recentTransactions, recentNotifications };
 };
 
-export const resolveAccount = async (accountNumber: string) => {
+export const resolveAccount = async (
+  accountNumber: string,
+  userAccountNumber: string,
+) => {
   // Early validation of account number format
   if (!accountNumber || !validateAccountNumber(accountNumber)) {
     throw new AppError("Invalid account number", 400);
+  }
+
+  if (accountNumber === userAccountNumber) {
+    throw new AppError("You cannot transfer to your own account", 400);
   }
 
   const user = await prisma.user.findUnique({

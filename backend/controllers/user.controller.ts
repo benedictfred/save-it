@@ -19,18 +19,22 @@ export const getDashboard = catchAsync(
         recentNotifications,
       },
     });
-  }
+  },
 );
 
 export const resolveAccount = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const { accountNumber } = req.params;
+    const { accountNumber: userAccountNumber } = req.user;
 
-    const user = await userService.resolveAccount(accountNumber);
+    const user = await userService.resolveAccount(
+      accountNumber,
+      userAccountNumber,
+    );
 
     res.status(200).json({
       status: "success",
       data: user,
     });
-  }
+  },
 );
