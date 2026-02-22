@@ -22,6 +22,7 @@ model User {
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
   status            AccountStatus  @default(pending)
+  devices           Device[]
   notifications     Notification[]
   transactions      Transaction[]
   verificationTokens VerificationToken[]
@@ -52,6 +53,15 @@ model Notification {
   createdAt     DateTime     @default(now())
   transaction   Transaction? @relation(fields: [transactionId], references: [id])
   user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Device {
+  id        String   @id @default(uuid())
+  pushToken String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model VerificationToken {
