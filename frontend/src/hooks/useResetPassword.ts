@@ -9,7 +9,8 @@ export function useResetPassword() {
   const navigate = useNavigate();
 
   return useMutation({
-    mutationFn: (data: ResetPasswordData) => resetPassword(data, token!),
+    mutationFn: (data: ResetPasswordData) =>
+      resetPassword({ ...data, token: token! }),
     onSuccess: (data) => {
       toast.success(data.message);
       navigate("/sign-in", { replace: true });

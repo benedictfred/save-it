@@ -7,6 +7,7 @@ import Loader from "./Loader";
 export interface ResetPasswordData {
   password: string;
   confirmPassword: string;
+  token: string;
 }
 
 export default function ResetPasswordForm() {

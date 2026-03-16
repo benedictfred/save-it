@@ -21,7 +21,7 @@ interface ApiResponse {
 }
 
 export async function loginUser(
-  payload: LoginFormData
+  payload: LoginFormData,
 ): Promise<LoginResponse> {
   const response = await fetch(`${API_URL}/auth/login`, {
     method: "POST",
@@ -42,7 +42,7 @@ export async function loginUser(
 }
 
 export async function registerUser(
-  payload: SignUpFormData
+  payload: SignUpFormData,
 ): Promise<SignUpResponse> {
   const res = await fetch(`${API_URL}/auth/signup`, {
     method: "POST",
@@ -114,9 +114,8 @@ export async function forgotPassword(payload: {
 
 export async function resetPassword(
   payload: ResetPasswordData,
-  token: string
 ): Promise<ApiResponse> {
-  const res = await fetch(`${API_URL}/auth/reset-password/${token}`, {
+  const res = await fetch(`${API_URL}/auth/reset-password`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -153,11 +152,12 @@ export async function setPin(payload: setPinData): Promise<ApiResponse> {
 }
 
 export async function verifyEmail(token: string): Promise<ApiResponse> {
-  const response = await fetch(`${API_URL}/auth/verify-email/${token}`, {
+  const response = await fetch(`${API_URL}/auth/verify-email`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
+    body: JSON.stringify({ token }),
     credentials: "include",
   });
 

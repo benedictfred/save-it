@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useTimer } from "../hooks/useTimer";
 import { resendVerificationEmail } from "../services/authService";
 import { toast } from "react-toastify";
@@ -7,36 +7,31 @@ import { useAuth } from "../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 
 export default function ResendEmailVerificationLink() {
-  const { timeLeft, setTimeLeft } = useTimer(0);
+  const { timeLeft, setTimeLeft } = useTimer(60);
   const [isLoading, setIsLoading] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  const sendVerificationEmail = useCallback(async () => {
+  const sendVerificationEmail = async () => {
     try {
       setIsLoading(true);
       const { message } = await resendVerificationEmail();
       toast.success(message || "Verification email resent successfully");
     } catch (error) {
       toast.error(
-        (error as Error).message || "Failed to resend verification email"
+        (error as Error).message || "Failed to resend verification email",
       );
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  };
 
   useEffect(() => {
-    const initialize = async () => {
-      if (user?.status === "active") {
-        navigate("/home", { replace: true });
-        return;
-      }
-      await sendVerificationEmail();
-      setTimeLeft(60);
-    };
-    initialize();
-  }, [sendVerificationEmail, navigate, user, setTimeLeft]);
+    if (user?.status === "active") {
+      navigate("/home", { replace: true });
+      return;
+    }
+  }, [navigate, user?.status]);
 
   async function handleResend() {
     if (timeLeft > 0) return;
