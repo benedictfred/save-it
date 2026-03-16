@@ -1,3 +1,4 @@
+import { Prisma } from "@prisma/client";
 import { prisma } from "../prisma/prisma";
 import { sendEvent } from "../utils/ably";
 import AppError from "../utils/appError";
@@ -22,6 +23,7 @@ export async function transfer({
     omit: {
       pin: false,
     },
+    include: { devices: true },
   });
 
   if (!sender) throw new AppError("Sender not found", 404);
@@ -34,18 +36,16 @@ export async function transfer({
 
   const recipient = await prisma.user.findUnique({
     where: { accountNumber: recipientAccNumber },
+    include: { devices: true },
   });
 
   if (!recipient) throw new AppError("Recipient not found", 404);
 
   try {
-    if (sender.balance < amount)
-      throw new AppError("Insufficient balance", 400);
-
     const result = await prisma.$transaction(async (tx) => {
       // Deduct sender
       await tx.user.update({
-        where: { id: senderId },
+        where: { id: senderId, balance: { gte: amount } },
         data: { balance: { decrement: amount } },
       });
 
@@ -88,39 +88,70 @@ export async function transfer({
       return { debitTx, creditTx };
     });
 
-    // Send Notifications
-    await Promise.all([
-      notificationService.create({
-        userId: sender.id,
-        title: "Transfer Successful",
-        body: `Your account was debited with ₦${amount} to ${recipient.name}.`,
-        transactionId: result.debitTx.id,
-      }),
-      notificationService.create({
-        userId: recipient.id,
-        title: "Credit Alert",
-        body: `Your account was credited with ₦${amount} from ${sender.name}.`,
-        transactionId: result.creditTx.id,
-      }),
-    ]);
+    const sendBackgoundNotifications = async () => {
+      try {
+        // Send Notifications
+        await Promise.all([
+          notificationService.create({
+            userId: sender.id,
+            title: "Transfer Successful",
+            body: `Your account was debited with ₦${amount} to ${recipient.name}.`,
+            transactionId: result.debitTx.id,
+          }),
+          notificationService.create({
+            userId: recipient.id,
+            title: "Credit Alert",
+            body: `Your account was credited with ₦${amount} from ${sender.name}.`,
+            transactionId: result.creditTx.id,
+          }),
+        ]);
 
-    // Send SSE event to sender
-    sendEvent(sender.id, {
-      event: "transaction",
-      data: {
-        type: "debit",
-        transaction: result.debitTx,
-      },
-    });
+        // Send SSE event to sender
+        sendEvent(sender.id, {
+          event: "transaction",
+          data: {
+            type: "debit",
+            transaction: result.debitTx,
+          },
+        });
 
-    // Send SSE event to recipient
-    sendEvent(recipient.id, {
-      event: "transaction",
-      data: {
-        type: "credit",
-        transaction: result.creditTx,
-      },
-    });
+        // Send SSE event to recipient
+        sendEvent(recipient.id, {
+          event: "transaction",
+          data: {
+            type: "credit",
+            transaction: result.creditTx,
+          },
+        });
+
+        // Send push notifications to all devices of sender and recipient
+        for (const device of sender.devices) {
+          await notificationService.sendPushNotification({
+            pushToken: device.pushToken,
+            title: "Transfer Successful",
+            body: `Your account was debited with ₦${amount} to ${recipient.name}.`,
+            data: {
+              transactionId: result.debitTx.id,
+            },
+          });
+        }
+
+        for (const device of recipient.devices) {
+          await notificationService.sendPushNotification({
+            pushToken: device.pushToken,
+            title: "Credit Alert",
+            body: `Your account was credited with ₦${amount} from ${sender.name}.`,
+            data: {
+              transactionId: result.creditTx.id,
+            },
+          });
+        }
+      } catch (err) {
+        console.log("Error sending background notifications:", err);
+      }
+    };
+
+    sendBackgoundNotifications();
 
     return result.debitTx;
   } catch (err) {
@@ -140,14 +171,31 @@ export async function transfer({
       },
     });
 
+    let errorMessage: string;
+    let statusCode: number;
+    let messageBody: string;
+
+    if (err instanceof AppError) {
+      errorMessage = err.message;
+      statusCode = err.statusCode;
+      messageBody = `The transfer of ₦${amount} to ${recipient.name} failed due to ${err.message}`;
+    } else if (
+      err instanceof Prisma.PrismaClientKnownRequestError &&
+      err.code === "P2025"
+    ) {
+      errorMessage = "Insufficient funds";
+      statusCode = 400;
+      messageBody = `The transfer of ₦${amount} to ${recipient.name} failed due to insufficient funds.`;
+    } else {
+      errorMessage = "Transaction Failed";
+      statusCode = 500;
+      messageBody = `The transfer of ₦${amount} to ${recipient.name} failed due to an unexpected error.`;
+    }
+
     await notificationService.create({
       userId: sender.id,
       title: "Transfer Failed",
-      body: `The transfer of ₦${amount} to ${recipient.name} failed due to ${
-        err instanceof AppError
-          ? err.message
-          : "an unexpected issue. Please try again later."
-      }.`,
+      body: messageBody,
       transactionId: failedTx.id,
     });
 
@@ -160,10 +208,19 @@ export async function transfer({
       },
     });
 
-    throw new AppError(
-      err instanceof AppError ? err.message : "Transaction Failed",
-      err instanceof AppError ? err.statusCode : 500,
-    );
+    // Send a push notification for failed transaction to all sender's devices
+    for (const device of sender.devices) {
+      await notificationService.sendPushNotification({
+        pushToken: device.pushToken,
+        title: "Transfer Failed",
+        body: messageBody,
+        data: {
+          transactionId: failedTx.id,
+        },
+      });
+    }
+
+    throw new AppError(errorMessage, statusCode);
   }
 }
 
@@ -174,4 +231,17 @@ export const getHistory = async (userId: string) => {
   });
 
   return transactions;
+};
+
+export const getTransactionById = async (
+  transactionId: string,
+  userId: string,
+) => {
+  const transaction = await prisma.transaction.findFirst({
+    where: { id: transactionId, userId },
+  });
+
+  if (!transaction) throw new AppError("Transaction not found", 404);
+
+  return transaction;
 };

@@ -10,7 +10,7 @@ export const transfer = catchAsync(
       transferSchema.parse(req.body);
 
     const transactionStatus = await transactionService.transfer({
-      senderId: req.user!.id!,
+      senderId: req.user.id,
       recipientAccNumber,
       pin,
       amount,
@@ -21,7 +21,7 @@ export const transfer = catchAsync(
       message: "Transfer successful",
       data: transactionStatus,
     });
-  }
+  },
 );
 
 export const getHistory = catchAsync(
@@ -32,7 +32,21 @@ export const getHistory = catchAsync(
       status: "success",
       data: transactions,
     });
-  }
+  },
+);
+
+export const getTransaction = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const transaction = await transactionService.getTransactionById(
+      req.params.transactionId,
+      req.user.id,
+    );
+
+    res.status(200).json({
+      status: "success",
+      data: transaction,
+    });
+  },
 );
 
 export const ablyEventHandler = catchAsync(
@@ -46,5 +60,5 @@ export const ablyEventHandler = catchAsync(
       ttl: 60 * 60 * 1000,
     });
     res.status(200).json(tokenRequest);
-  }
+  },
 );
