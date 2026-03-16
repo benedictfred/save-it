@@ -1,9 +1,29 @@
-import Expo, { ExpoPushMessage } from "expo-server-sdk";
 import { prisma } from "../prisma/prisma";
 import { sendEvent } from "../utils/ably";
 import AppError from "../utils/appError";
 
-const expo = new Expo();
+type ExpoModule = typeof import("expo-server-sdk");
+
+let expoModulePromise: Promise<ExpoModule> | null = null;
+let expoClient: any = null;
+
+const getExpoModule = async () => {
+  if (!expoModulePromise) {
+    expoModulePromise = import("expo-server-sdk");
+  }
+  return expoModulePromise;
+};
+
+const getExpoClient = async () => {
+  const module = await getExpoModule();
+  const ExpoClient = module.default;
+
+  if (!expoClient) {
+    expoClient = new ExpoClient();
+  }
+
+  return { ExpoClient, expoClient };
+};
 
 interface SendPushNotificationParams {
   pushToken: string;
@@ -72,11 +92,13 @@ export async function sendPushNotification({
   body,
   data,
 }: SendPushNotificationParams) {
-  if (!Expo.isExpoPushToken(pushToken)) {
+  const { ExpoClient, expoClient } = await getExpoClient();
+
+  if (!ExpoClient.isExpoPushToken(pushToken)) {
     throw new AppError(`Invalid Expo push token: ${pushToken}`, 400);
   }
 
-  const messages: ExpoPushMessage[] = [
+  const messages = [
     {
       to: pushToken,
       sound: "default",
@@ -87,11 +109,11 @@ export async function sendPushNotification({
   ];
 
   try {
-    const chunks = expo.chunkPushNotifications(messages);
+    const chunks = expoClient.chunkPushNotifications(messages);
     const tickets = [];
 
     for (const chunk of chunks) {
-      const ticketChunk = await expo.sendPushNotificationsAsync(chunk);
+      const ticketChunk = await expoClient.sendPushNotificationsAsync(chunk);
       tickets.push(...ticketChunk);
     }
 
