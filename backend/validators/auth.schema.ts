@@ -15,6 +15,7 @@ export const signupSchema = z
     password: z
       .string()
       .min(6, "Password should be at least 6 characters long"),
+    client: z.enum(["web", "mobile"]).default("web"),
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
@@ -36,6 +37,7 @@ export const loginSchema = z.object({
   //   }),
   email: z.email(),
   password: z.string(),
+  client: z.enum(["web", "mobile"]).default("web"),
 });
 
 export type LoginInput = z.infer<typeof loginSchema>;
@@ -46,6 +48,7 @@ export const resetPasswordSchema = z
       .string()
       .min(6, "password should be at least 6 characters long"),
     confirmPassword: z.string(),
+    token: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords do not match",

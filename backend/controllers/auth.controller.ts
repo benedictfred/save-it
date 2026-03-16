@@ -14,11 +14,11 @@ export const signUp = catchAsync(
 
     res.status(201).json({
       status: "success",
-      user,
       token,
       message,
+      user
     });
-  }
+  },
 );
 
 export const login = catchAsync(
@@ -34,7 +34,7 @@ export const login = catchAsync(
       user,
       token,
     });
-  }
+  },
 );
 
 export const googleAuth = catchAsync(
@@ -58,7 +58,7 @@ export const googleAuth = catchAsync(
         ? "Account created successfully with Google"
         : "Logged in successfully with Google",
     });
-  }
+  },
 );
 
 export const setPin = catchAsync(
@@ -71,38 +71,40 @@ export const setPin = catchAsync(
       status: "success",
       message: "Pin set successfully",
     });
-  }
+  },
 );
 
 export const forgotPassword = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const { email } = req.body;
+    const { email, client } = req.body;
 
-    await authService.forgotPassword(email);
+    await authService.forgotPassword(email, client);
+    const message =
+      client === "mobile"
+        ? "A password reset OTP was sent to your email"
+        : "A reset link was sent to your email";
 
     res.status(200).json({
       status: "success",
-      message: "A reset link was sent to your email",
+      message,
     });
-  }
+  },
 );
 
 export const resetPassword = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const { token } = req.params;
-
-    await authService.resetPassword(req.body, token);
+    await authService.resetPassword(req.body);
 
     res.status(200).json({
       status: "success",
       message: "Password reset successful",
     });
-  }
+  },
 );
 
 export const verifyEmail = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const { token } = req.params;
+    const { token } = req.body;
 
     const { message, newToken } = await authService.verifyEmail(token);
 
@@ -112,19 +114,24 @@ export const verifyEmail = catchAsync(
     res.status(200).json({
       status: "success",
       message,
+      token: newToken,
     });
-  }
+  },
 );
 
 export const resendVerificationEmail = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const { message } = await authService.sendVerificationEmail(req.user.id);
+    const { client } = req.body;
+    const { message } = await authService.sendVerificationEmail(
+      req.user.id,
+      client,
+    );
 
     res.status(200).json({
       status: "success",
       message,
     });
-  }
+  },
 );
 
 export const logout = (req: Request, res: Response) => {

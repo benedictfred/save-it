@@ -13,16 +13,22 @@ import {
 } from "../validators/auth.schema";
 import { sendEmail } from "../utils/email";
 import { resetPasswordTemplate } from "../templates/resetPasswordEmail";
-import { generateRandomToken, hashToken } from "../utils/generateToken";
+import {
+  generateOTP,
+  generateRandomToken,
+  hashToken,
+} from "../utils/generateToken";
 import { verifyEmailTemplate } from "../templates/verifyAccoutEmail";
+import { verifyEmailOtpTemplate } from "../templates/verifyAccountOtpEmail";
 import { signToken } from "../utils/jwt";
 import { generateAccountNumber } from "../utils/generateAccNumber";
 import { verifyIdToken } from "../utils/firebaseAdmin";
+import { resetPasswordOtpTemplate } from "../templates/resetPasswordOtpEmail";
 
 const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
 
 export const signUp = async (body: SignupInput) => {
-  const { name, password, email } = signupSchema.parse(body);
+  const { name, password, email, client } = signupSchema.parse(body);
 
   const accountNumber = await generateAccountNumber();
 
@@ -32,15 +38,17 @@ export const signUp = async (body: SignupInput) => {
 
   const token = signToken(user.id, "20m");
 
+  await sendVerificationEmail(user.id, client);
+
   return {
     user: sanitizeUser(user),
-    message: "Account created successfully.",
+    message: "Account created successfully, verification email has been sent.",
     token,
   };
 };
 
 export const login = async (body: LoginInput) => {
-  const { email, password } = loginSchema.parse(body);
+  const { email, password, client } = loginSchema.parse(body);
 
   if (!email || !password) {
     throw new AppError("Please provide Email and Password", 400);
@@ -59,9 +67,12 @@ export const login = async (body: LoginInput) => {
 
   let token;
 
-  user.status === "pending"
-    ? (token = signToken(user.id, "20m"))
-    : (token = signToken(user.id));
+  if (user.status === "pending") {
+    await sendVerificationEmail(user.id, client);
+    token = signToken(user.id, "20m");
+  } else {
+    token = signToken(user.id);
+  }
 
   return {
     user: sanitizeUser(user),
@@ -108,7 +119,7 @@ export const googleAuth = async (idToken: string) => {
     },
   });
 
-  const token = signToken(newUser.id, "20m");
+  const token = signToken(newUser.id);
 
   return {
     user: sanitizeUser(newUser),
@@ -131,26 +142,33 @@ export const setPin = async (userId: string, pin: string) => {
   return user;
 };
 
-export const forgotPassword = async (email: string) => {
+export const forgotPassword = async (
+  email: string,
+  client: "web" | "mobile" = "web",
+) => {
   const user = await prisma.user.findUnique({
     where: { email },
   });
 
   if (!user) throw new AppError("User was not found", 404);
 
-  const resetToken = crypto.randomBytes(32).toString("hex");
+  let rawToken: string;
+  let emailMessage: string;
+
+  if (client === "mobile") {
+    rawToken = generateOTP();
+    emailMessage = resetPasswordOtpTemplate(rawToken);
+  } else {
+    rawToken = crypto.randomBytes(32).toString("hex");
+    const resetLink = `${frontendUrl}/reset-password/${rawToken}`;
+    emailMessage = resetPasswordTemplate(resetLink);
+  }
+
   const hashedResetToken = crypto
     .createHash("sha256")
-    .update(resetToken)
+    .update(rawToken)
     .digest("hex");
   const resetTokenExpiry = new Date(Date.now() + 10 * 60 * 1000);
-
-  await prisma.verificationToken.deleteMany({
-    where: {
-      userId: user.id,
-      type: "password_reset",
-    },
-  });
 
   const verificationToken = await prisma.verificationToken.upsert({
     where: {
@@ -168,12 +186,14 @@ export const forgotPassword = async (email: string) => {
     },
   });
 
-  const resetLink = `${frontendUrl}/reset-password/${resetToken}`;
   try {
     await sendEmail({
       email,
-      subject: "Your password reset link (valid for 10mins)",
-      message: resetPasswordTemplate(resetLink),
+      subject:
+        client === "mobile"
+          ? "Your password reset OTP (valid for 10mins)"
+          : "Your password reset link (valid for 10mins)",
+      message: emailMessage,
     });
   } catch (err) {
     await prisma.verificationToken.delete({
@@ -181,16 +201,18 @@ export const forgotPassword = async (email: string) => {
     });
     throw new AppError(
       err instanceof Error ? err.message : "Failed to send email",
-      500
+      500,
     );
   }
 };
 
-export const resetPassword = async (
-  body: ResetPasswordInput,
-  token: string
-) => {
-  const { password } = resetPasswordSchema.parse(body);
+export const resetPassword = async (body: ResetPasswordInput) => {
+  const { password, token } = resetPasswordSchema.parse(body);
+
+  if (!token) {
+    throw new AppError("Token is required", 400);
+  }
+
   const hashedResetToken = crypto
     .createHash("sha256")
     .update(token)
@@ -230,7 +252,10 @@ export const resetPassword = async (
   });
 };
 
-export const sendVerificationEmail = async (userId: string) => {
+export const sendVerificationEmail = async (
+  userId: string,
+  client: "web" | "mobile" = "web",
+) => {
   const user = await prisma.user.findUnique({
     where: { id: userId },
   });
@@ -239,8 +264,8 @@ export const sendVerificationEmail = async (userId: string) => {
     throw new AppError("User not found", 404);
   }
 
-  const emailToken = generateRandomToken();
-  const hashedEmailToken = hashToken(emailToken);
+  const rawToken = client === "mobile" ? generateOTP() : generateRandomToken();
+  const hashedEmailToken = hashToken(rawToken);
 
   await prisma.verificationToken.upsert({
     where: {
@@ -258,12 +283,16 @@ export const sendVerificationEmail = async (userId: string) => {
     },
   });
 
-  const verificationLink = `${frontendUrl}/verify-email/${emailToken}`;
+  const verificationLink = `${frontendUrl}/verify-email/${rawToken}`;
   try {
     await sendEmail({
       email: user.email,
-      subject: "Email Verification",
-      message: verifyEmailTemplate(user.name, verificationLink),
+      subject:
+        client === "mobile" ? "Email Verification OTP" : "Email Verification",
+      message:
+        client === "mobile"
+          ? verifyEmailOtpTemplate(user.name, rawToken)
+          : verifyEmailTemplate(user.name, verificationLink),
     });
     return { message: "Verification email sent successfully" };
   } catch (err) {
@@ -275,7 +304,7 @@ export const sendVerificationEmail = async (userId: string) => {
     });
     throw new AppError(
       err instanceof Error ? err.message : "Failed to send email",
-      500
+      500,
     );
   }
 };
