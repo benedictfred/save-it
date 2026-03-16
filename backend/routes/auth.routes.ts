@@ -16,6 +16,7 @@ import {
   emailVerificationLimiter,
   passwordResetLimiter,
 } from "../middlewares/ratelimit.middleware";
+import { checkAccountVerification } from "../middlewares/check-account-verification.middleware";
 
 const router = Router();
 
@@ -23,16 +24,16 @@ router.post("/signup", authLimiter, signUp);
 router.post("/login", authLimiter, login);
 router.post("/google", authLimiter, googleAuth);
 router.post("/forgot-password", passwordResetLimiter, forgotPassword);
-router.post("/reset-password/:token", resetPassword);
-router.post("/verify-email/:token", verifyEmail);
+router.post("/reset-password", resetPassword);
+router.post("/verify-email", verifyEmail);
 router.post(
   "/resend-verification-email",
   emailVerificationLimiter,
   protect,
-  resendVerificationEmail
+  resendVerificationEmail,
 );
 router.post("/logout", logout);
-router.patch("/pin", protect, setPin);
+router.patch("/pin", protect, checkAccountVerification, setPin);
 
 // router.post("/verify-phone", protect, verifyPhone);
 // router.post("/resend-otp", protect, resendOtp);

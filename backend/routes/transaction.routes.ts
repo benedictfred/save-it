@@ -1,6 +1,7 @@
 import {
   ablyEventHandler,
   getHistory,
+  getTransaction,
   transfer,
 } from "../controllers/transaction.controller";
 import { Router } from "express";
@@ -18,9 +19,22 @@ router.post(
   transactionLimiter,
   protect,
   checkAccountVerification,
-  transfer
+  transfer,
 );
-router.get("/history", readLimiter, protect, getHistory);
-router.get("/stream", protect, ablyEventHandler);
+router.get(
+  "/history",
+  readLimiter,
+  protect,
+  checkAccountVerification,
+  getHistory,
+);
+router.get("/stream", protect, checkAccountVerification, ablyEventHandler);
+router.get(
+  "/:transactionId",
+  readLimiter,
+  protect,
+  checkAccountVerification,
+  getTransaction,
+);
 
 export default router;

@@ -3,7 +3,7 @@ import { NextFunction, Request, Response } from "express";
 export function checkAccountVerification(
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) {
   const user = req.user;
 
@@ -14,8 +14,7 @@ export function checkAccountVerification(
   if (user.status === "pending") {
     return res.status(403).json({
       status: "fail",
-      message:
-        "Please verify your email and phone number to access this resource",
+      message: "Please verify your email to access this resource",
     });
   }
 
