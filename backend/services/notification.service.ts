@@ -2,29 +2,6 @@ import { prisma } from "../prisma/prisma";
 import { sendEvent } from "../utils/ably";
 import AppError from "../utils/appError";
 
-type ExpoModule = typeof import("expo-server-sdk");
-
-let expoModulePromise: Promise<ExpoModule> | null = null;
-let expoClient: any = null;
-
-const getExpoModule = async () => {
-  if (!expoModulePromise) {
-    expoModulePromise = import("expo-server-sdk");
-  }
-  return expoModulePromise;
-};
-
-const getExpoClient = async () => {
-  const module = await getExpoModule();
-  const ExpoClient = module.default;
-
-  if (!expoClient) {
-    expoClient = new ExpoClient();
-  }
-
-  return { ExpoClient, expoClient };
-};
-
 interface SendPushNotificationParams {
   pushToken: string;
   title: string;
@@ -92,32 +69,31 @@ export async function sendPushNotification({
   body,
   data,
 }: SendPushNotificationParams) {
-  const { ExpoClient, expoClient } = await getExpoClient();
-
-  if (!ExpoClient.isExpoPushToken(pushToken)) {
+  if (!pushToken || !pushToken.startsWith("ExponentPushToken[")) {
     throw new AppError(`Invalid Expo push token: ${pushToken}`, 400);
   }
 
-  const messages = [
-    {
-      to: pushToken,
-      sound: "default",
-      title,
-      body,
-      data,
-    },
-  ];
+  const message = {
+    to: pushToken,
+    sound: "default",
+    title,
+    body,
+    data,
+  };
 
   try {
-    const chunks = expoClient.chunkPushNotifications(messages);
-    const tickets = [];
+    const response = await fetch("https://exp.host/--/api/v2/push/send", {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Accept-encoding": "gzip, deflate",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(message),
+    });
 
-    for (const chunk of chunks) {
-      const ticketChunk = await expoClient.sendPushNotificationsAsync(chunk);
-      tickets.push(...ticketChunk);
-    }
-
-    return tickets;
+    const receipt = await response.json();
+    return receipt;
   } catch (error) {
     console.error(`Failed to send push notification: ${error}`);
   }
