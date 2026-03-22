@@ -6,8 +6,4 @@ export const transferSchema = z.object({
   pin: z.string().length(4),
 });
 
-export type TransferInput = z.infer<typeof transferSchema>;
-
-export const pinSchema = z.object({
-  pin: z.string().length(4, "pin must be 4 characters"),
-});
+export type TransferDto = z.infer<typeof transferSchema>;

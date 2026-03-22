@@ -1,12 +1,12 @@
 import catchAsync from "../utils/catchAsync";
-import { TransferInput, transferSchema } from "../validators/user.schema";
+import { TransferDto, transferSchema } from "../validators/transaction.schema";
 import { NextFunction, Request, Response } from "express";
 import * as transactionService from "../services/transaction.service";
 import { ably } from "../utils/ably";
 
 export const transfer = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const { amount, recipientAccNumber, pin }: TransferInput =
+    const { amount, recipientAccNumber, pin }: TransferDto =
       transferSchema.parse(req.body);
 
     const transactionStatus = await transactionService.transfer({

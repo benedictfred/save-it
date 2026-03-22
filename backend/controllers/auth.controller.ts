@@ -1,7 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import catchAsync from "../utils/catchAsync";
 import * as authService from "../services/auth.service";
-import { pinSchema } from "../validators/user.schema";
 import { clearCookie, sendAuthCookie, sendCookie } from "../utils/cookie";
 import AppError from "../utils/appError";
 
@@ -16,7 +15,7 @@ export const signUp = catchAsync(
       status: "success",
       token,
       message,
-      user
+      user,
     });
   },
 );
@@ -63,7 +62,7 @@ export const googleAuth = catchAsync(
 
 export const setPin = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const { pin } = pinSchema.parse(req.body);
+    const { pin } = req.body;
 
     await authService.setPin(req.user.id, pin);
 
@@ -91,6 +90,19 @@ export const forgotPassword = catchAsync(
   },
 );
 
+export const validateResetOtp = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { otp } = req.body;
+
+    const { resetSessionToken } = await authService.validateResetOtp(otp);
+
+    res.status(200).json({
+      status: "success",
+      resetSessionToken,
+    });
+  },
+);
+
 export const resetPassword = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     await authService.resetPassword(req.body);
@@ -106,7 +118,8 @@ export const verifyEmail = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const { token } = req.body;
 
-    const { message, newToken } = await authService.verifyEmail(token);
+    const { message, newToken, userStatus } =
+      await authService.verifyEmail(token);
 
     // Send real token after verification
     sendCookie(res, newToken);
@@ -115,6 +128,7 @@ export const verifyEmail = catchAsync(
       status: "success",
       message,
       token: newToken,
+      userStatus,
     });
   },
 );
@@ -130,6 +144,17 @@ export const resendVerificationEmail = catchAsync(
     res.status(200).json({
       status: "success",
       message,
+    });
+  },
+);
+
+export const updatePassword = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    await authService.updatePassword(req.body, req.user);
+
+    res.status(200).json({
+      status: "success",
+      message: "Password changed successfully",
     });
   },
 );

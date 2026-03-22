@@ -7,6 +7,8 @@ import {
   resetPassword,
   setPin,
   signUp,
+  updatePassword,
+  validateResetOtp,
   verifyEmail,
 } from "../controllers/auth.controller";
 import { Router } from "express";
@@ -25,6 +27,7 @@ router.post("/login", authLimiter, login);
 router.post("/google", authLimiter, googleAuth);
 router.post("/forgot-password", passwordResetLimiter, forgotPassword);
 router.post("/reset-password", resetPassword);
+router.post("/validate-otp", validateResetOtp);
 router.post("/verify-email", verifyEmail);
 router.post(
   "/resend-verification-email",
@@ -34,6 +37,7 @@ router.post(
 );
 router.post("/logout", logout);
 router.patch("/pin", protect, checkAccountVerification, setPin);
+router.patch("/update-password", protect, updatePassword);
 
 // router.post("/verify-phone", protect, verifyPhone);
 // router.post("/resend-otp", protect, resendOtp);
