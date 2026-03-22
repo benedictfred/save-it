@@ -98,5 +98,6 @@ enum VerificationType {
   email
   phone
   password_reset
+  password_reset_session
   two_factor
 }
