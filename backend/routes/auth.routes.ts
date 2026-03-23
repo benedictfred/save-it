@@ -8,6 +8,7 @@ import {
   setPin,
   signUp,
   updatePassword,
+  updateTransactionPin,
   validateResetOtp,
   verifyEmail,
 } from "../controllers/auth.controller";
@@ -37,7 +38,18 @@ router.post(
 );
 router.post("/logout", logout);
 router.patch("/pin", protect, checkAccountVerification, setPin);
-router.patch("/update-password", protect, updatePassword);
+router.patch(
+  "/update-password",
+  protect,
+  checkAccountVerification,
+  updatePassword,
+);
+router.patch(
+  "/update-pin",
+  protect,
+  checkAccountVerification,
+  updateTransactionPin,
+);
 
 // router.post("/verify-phone", protect, verifyPhone);
 // router.post("/resend-otp", protect, resendOtp);

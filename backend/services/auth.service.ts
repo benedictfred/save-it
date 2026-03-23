@@ -4,12 +4,17 @@ import bcrypt from "bcrypt";
 import crypto from "crypto";
 import { sanitizeUser } from "../utils/sanitize";
 import {
-  LoginInput,
+  LoginDto,
   loginSchema,
-  ResetPasswordInput,
+  pinSchema,
+  ResetPasswordDto,
   resetPasswordSchema,
-  SignupInput,
+  SignupDto,
   signupSchema,
+  UpdatePasswordDto,
+  updatePasswordSchema,
+  UpdatePinDto,
+  updatePinSchema,
 } from "../validators/auth.schema";
 import { sendEmail } from "../utils/email";
 import { resetPasswordTemplate } from "../templates/resetPasswordEmail";
@@ -24,10 +29,11 @@ import { signToken } from "../utils/jwt";
 import { generateAccountNumber } from "../utils/generateAccNumber";
 import { verifyIdToken } from "../utils/firebaseAdmin";
 import { resetPasswordOtpTemplate } from "../templates/resetPasswordOtpEmail";
+import { User } from "@prisma/client";
 
 const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
 
-export const signUp = async (body: SignupInput) => {
+export const signUp = async (body: SignupDto) => {
   const { name, password, email, client } = signupSchema.parse(body);
 
   const accountNumber = await generateAccountNumber();
@@ -47,7 +53,7 @@ export const signUp = async (body: SignupInput) => {
   };
 };
 
-export const login = async (body: LoginInput) => {
+export const login = async (body: LoginDto) => {
   const { email, password, client } = loginSchema.parse(body);
 
   if (!email || !password) {
@@ -128,7 +134,9 @@ export const googleAuth = async (idToken: string) => {
   };
 };
 
-export const setPin = async (userId: string, pin: string) => {
+export const setPin = async (userId: string, pinInput: string) => {
+  const { pin } = pinSchema.parse(pinInput);
+
   if (!pin) throw new AppError("No pin was provided", 400);
 
   const hashedPin = await bcrypt.hash(pin, 12);
@@ -206,7 +214,47 @@ export const forgotPassword = async (
   }
 };
 
-export const resetPassword = async (body: ResetPasswordInput) => {
+export const validateResetOtp = async (otp: string) => {
+  const hashedOtp = crypto.createHash("sha256").update(otp).digest("hex");
+
+  const validToken = await prisma.verificationToken.findFirst({
+    where: {
+      token: hashedOtp,
+      type: "password_reset",
+      expiresAt: { gt: new Date() },
+    },
+    include: {
+      user: true,
+    },
+  });
+
+  if (!validToken) {
+    throw new AppError("Invalid or expired Otp", 400);
+  }
+
+  const sessionToken = crypto.randomBytes(32).toString("hex");
+  const hashedSessionToken = crypto
+    .createHash("sha256")
+    .update(sessionToken)
+    .digest("hex");
+
+  await prisma.verificationToken.create({
+    data: {
+      userId: validToken.user.id,
+      type: "password_reset_session",
+      token: hashedSessionToken,
+      expiresAt: new Date(Date.now() + 15 * 60 * 1000),
+    },
+  });
+
+  await prisma.verificationToken.delete({ where: { id: validToken.id } });
+
+  return {
+    resetSessionToken: sessionToken,
+  };
+};
+
+export const resetPassword = async (body: ResetPasswordDto) => {
   const { password, token } = resetPasswordSchema.parse(body);
 
   if (!token) {
@@ -223,7 +271,7 @@ export const resetPassword = async (body: ResetPasswordInput) => {
       verificationTokens: {
         some: {
           token: hashedResetToken,
-          type: "password_reset",
+          type: { in: ["password_reset", "password_reset_session"] },
           expiresAt: { gt: new Date() },
         },
       },
@@ -247,7 +295,7 @@ export const resetPassword = async (body: ResetPasswordInput) => {
   await prisma.verificationToken.deleteMany({
     where: {
       userId: user.id,
-      type: "password_reset",
+      type: { in: ["password_reset", "password_reset_session"] },
     },
   });
 };
@@ -349,7 +397,80 @@ export const verifyEmail = async (token: string) => {
   return {
     message: "Email verified successfully",
     newToken: accessToken,
+    userStatus: verifiedUser.status,
   };
+};
+
+export const updatePassword = async (
+  payload: UpdatePasswordDto,
+  user: User,
+) => {
+  const { currentPassword, newPassword } = updatePasswordSchema.parse(payload);
+
+  const userToUpdate = await prisma.user.findUnique({
+    where: { id: user.id },
+    select: { id: true, password: true },
+  });
+
+  if (!userToUpdate || !userToUpdate.password) {
+    throw new AppError("User not found or password not set", 400);
+  }
+
+  const isCurrentPasswordCorrect = await bcrypt.compare(
+    currentPassword,
+    userToUpdate.password,
+  );
+
+  if (!isCurrentPasswordCorrect) {
+    throw new AppError("Current password is not correct", 400);
+  }
+
+  if (currentPassword === newPassword) {
+    throw new AppError(
+      "New password must be different from current password",
+      400,
+    );
+  }
+
+  const hashedNewPassword = await bcrypt.hash(newPassword, 12);
+
+  await prisma.user.update({
+    where: { id: userToUpdate.id },
+    data: { password: hashedNewPassword, passwordChangedAt: new Date() },
+  });
+};
+
+export const updatePin = async (payload: UpdatePinDto, user: User) => {
+  const { currentPin, newPin } = updatePinSchema.parse(payload);
+
+  const userToUpdate = await prisma.user.findUnique({
+    where: { id: user.id },
+    select: { id: true, pin: true },
+  });
+
+  if (!userToUpdate || !userToUpdate.pin) {
+    throw new AppError("User not found or pin not set", 400);
+  }
+
+  const isCurrentPinCorrect = await bcrypt.compare(
+    currentPin,
+    userToUpdate.pin,
+  );
+
+  if (!isCurrentPinCorrect) {
+    throw new AppError("Current pin is not correct", 400);
+  }
+
+  if (currentPin === newPin) {
+    throw new AppError("New pin must be different from current pin", 400);
+  }
+
+  const hashedNewPin = await bcrypt.hash(newPin, 12);
+
+  await prisma.user.update({
+    where: { id: userToUpdate.id },
+    data: { pin: hashedNewPin },
+  });
 };
 
 // export const sendPhoneVerificationOTP = async (userId: string) => {

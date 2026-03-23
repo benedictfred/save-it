@@ -53,6 +53,7 @@ export const googleAuth = catchAsync(
     res.status(isNewUser ? 201 : 200).json({
       status: "success",
       user,
+      token,
       message: isNewUser
         ? "Account created successfully with Google"
         : "Logged in successfully with Google",
@@ -62,9 +63,7 @@ export const googleAuth = catchAsync(
 
 export const setPin = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const { pin } = req.body;
-
-    await authService.setPin(req.user.id, pin);
+    await authService.setPin(req.user.id, req.body);
 
     res.status(200).json({
       status: "success",
@@ -155,6 +154,17 @@ export const updatePassword = catchAsync(
     res.status(200).json({
       status: "success",
       message: "Password changed successfully",
+    });
+  },
+);
+
+export const updateTransactionPin = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    await authService.updatePin(req.body, req.user);
+
+    res.status(200).json({
+      status: "success",
+      message: "Pin changed successfully",
     });
   },
 );
