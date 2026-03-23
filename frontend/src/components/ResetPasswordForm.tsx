@@ -29,7 +29,10 @@ export default function ResetPasswordForm() {
       });
       return;
     }
-    handleResetPassword(data);
+
+    handleResetPassword({
+      password: data.password,
+    });
   };
 
   return (

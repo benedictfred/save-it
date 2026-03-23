@@ -113,7 +113,7 @@ export async function forgotPassword(payload: {
 }
 
 export async function resetPassword(
-  payload: ResetPasswordData,
+  payload: Omit<ResetPasswordData, "confirmPassword">,
 ): Promise<ApiResponse> {
   const res = await fetch(`${API_URL}/auth/reset-password`, {
     method: "POST",
