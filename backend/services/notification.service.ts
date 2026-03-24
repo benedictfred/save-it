@@ -79,6 +79,7 @@ export async function sendPushNotification({
     title,
     body,
     data,
+    priority: "high",
   };
 
   try {
