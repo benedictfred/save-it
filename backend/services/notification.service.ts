@@ -80,6 +80,7 @@ export async function sendPushNotification({
     body,
     data,
     priority: "high",
+    channelId: "alerts",
   };
 
   try {
